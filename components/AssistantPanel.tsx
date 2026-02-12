@@ -4,8 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useAlertContext } from "@/lib/AlertContext";
 import { useAssistantContext } from "@/lib/AssistantContext";
 
-const ADD_REPORT_INTRO =
-  "You can add a custom report to this page. Describe what you want (e.g. alert volume by segment, outcomes by rule) and I'll generate a read-only view. Views use allowlisted data only and are labeled as strategist-created.";
+const CREATE_REPORT_INTRO =
+  "You can create a custom report for your dashboard. Describe what you want (e.g. alert volume by segment, outcomes by rule) and I'll generate a read-only view. Views use allowlisted data only and are labeled as strategist-created.";
 
 const STUB_RESPONSES: Record<string, string> = {
   "why was this account flagged":
@@ -35,7 +35,7 @@ function getStubResponse(
   const addReportHint =
     lower.includes("add") && (lower.includes("report") || lower.includes("view") || lower.includes("dashboard"));
   if (addReportHint) {
-    return "In production, I would add that report to your Dashboard. The View Engine would generate a read-only view from your description (allowlisted data only). You can refine it by asking to add filters or group by different dimensions.";
+    return "In production, I would create that report and add it to your Dashboard. The View Engine would generate a read-only view from your description (allowlisted data only). You can refine it by asking to add filters or group by different dimensions.";
   }
   return `In production, the Assistant would use Mercury internal context (schemas, rules, policies) to answer.${hint} Try: "Why was this account flagged?", "What similar cases exist?", or "Summarize this case for partner bank escalation."`;
 }
@@ -60,7 +60,7 @@ export function AssistantPanel() {
 
   useEffect(() => {
     if (assistantOpen && assistantIntent === "add_report") {
-      setMessages((m) => [...m, { role: "assistant", content: ADD_REPORT_INTRO }]);
+      setMessages((m) => [...m, { role: "assistant", content: CREATE_REPORT_INTRO }]);
       clearAssistantIntent();
     }
   }, [assistantOpen, assistantIntent, clearAssistantIntent]);
@@ -104,7 +104,7 @@ export function AssistantPanel() {
 
         <div className="px-4 pt-4 pb-3 border-b border-border shrink-0 space-y-1">
           {currentAlert && (
-            <p className="text-xs text-[#6ea8fe]">
+            <p className="text-xs text-brand">
               Viewing alert <span className="font-mono">{currentAlert.alertId}</span> ({currentAlert.accountName})
             </p>
           )}
@@ -122,7 +122,7 @@ export function AssistantPanel() {
               <div
                 className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
                   msg.role === "user"
-                    ? "bg-[#6ea8fe]/20 text-white"
+                    ? "bg-brand/20 text-white"
                     : "bg-surface-overlay text-[#e6edf3]"
                 }`}
               >
@@ -160,13 +160,13 @@ export function AssistantPanel() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about alerts, risk scores, or similar cases…"
-              className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-[#6ea8fe]"
+              className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-brand"
               disabled={loading}
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="rounded-lg bg-[#6ea8fe] px-4 py-2 text-sm font-medium text-white hover:bg-[#5b9cfb] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
             >
               Send
             </button>

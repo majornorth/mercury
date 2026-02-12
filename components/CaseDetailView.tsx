@@ -46,7 +46,7 @@ export function CaseDetailView({ caseItem, alert, similarCases }: CaseDetailView
                 <>
                   <Link
                     href={`/alerts/${caseItem.alertId}`}
-                    className="text-[#6ea8fe] hover:underline font-medium"
+                    className="text-brand hover:underline font-medium"
                   >
                     {caseItem.alertId}
                   </Link>
@@ -63,7 +63,7 @@ export function CaseDetailView({ caseItem, alert, similarCases }: CaseDetailView
             {alert && (
               <Link
                 href={`/alerts/${caseItem.alertId}`}
-                className="inline-block mt-2 text-sm text-[#6ea8fe] hover:underline"
+                className="inline-block mt-2 text-sm text-brand hover:underline"
               >
                 Open alert detail →
               </Link>
@@ -98,12 +98,12 @@ export function CaseDetailView({ caseItem, alert, similarCases }: CaseDetailView
                   const otherAlert = MOCK_ALERTS.find((a) => a.id === c.alertId);
                   return (
                     <li key={c.id} className="text-sm flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <Link href={`/cases/${c.id}`} className="text-[#6ea8fe] hover:underline font-medium">
+                      <Link href={`/cases/${c.id}`} className="text-brand hover:underline font-medium">
                         {c.id}
                       </Link>
                       <span className="text-[#8b9cad]">
                         alert{" "}
-                        <Link href={`/alerts/${c.alertId}`} className="text-[#6ea8fe] hover:underline font-mono">
+                        <Link href={`/alerts/${c.alertId}`} className="text-brand hover:underline font-mono">
                           {c.alertId}
                         </Link>
                         {otherAlert && ` · ${otherAlert.segment ?? "—"}`} · {c.outcome != null ? outcomeLabel(c.outcome) : "Open"}

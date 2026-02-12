@@ -8,6 +8,10 @@
   --border: #2d3843;
   --text: #e6edf3;
   --text-muted: #8b9cad;
+  /* Brand: rgb(82, 102, 235) and variants */
+  --brand: 82 102 235;
+  --brand-hover: 65 85 220;
+  --brand-muted: 82 102 235;
 }
 
 body {

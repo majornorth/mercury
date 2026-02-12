@@ -62,7 +62,7 @@ function SortableTh({
       <span className="inline-flex items-center gap-1">
         {label}
         {isActive && (
-          <span className="text-[#6ea8fe]" aria-hidden>
+          <span className="text-brand" aria-hidden>
             {sortDir === "asc" ? "↑" : "↓"}
           </span>
         )}

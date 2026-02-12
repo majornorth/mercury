@@ -18,7 +18,7 @@ export function AlertVolumeByRule() {
         <h2 className="text-sm font-medium text-[#8b9cad]">Alert volume by rule</h2>
         <Link
           href="/rules"
-          className="text-sm font-medium text-[#6ea8fe] hover:underline shrink-0"
+          className="text-sm font-medium text-brand hover:underline shrink-0"
         >
           Rules reference
         </Link>

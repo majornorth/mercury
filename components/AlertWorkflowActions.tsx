@@ -186,7 +186,7 @@ export function AlertWorkflowActions({
     <section className="rounded-lg border border-border bg-surface-elevated p-4">
       <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Workflow actions</h2>
       {actionMessage && (
-        <p className="text-sm text-[#6ea8fe] mb-3 rounded bg-[#6ea8fe]/10 px-2 py-1.5 border border-[#6ea8fe]/30">
+        <p className="text-sm text-brand mb-3 rounded bg-brand/10 px-2 py-1.5 border border-brand/30">
           {actionMessage}
         </p>
       )}
@@ -194,7 +194,7 @@ export function AlertWorkflowActions({
         {relatedCase ? (
           <Link
             href={`/cases/${relatedCase.id}`}
-            className="rounded-lg bg-[#6ea8fe] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#5b9cfb] transition-colors inline-block"
+            className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover transition-colors inline-block"
           >
             Open case
           </Link>
@@ -205,7 +205,7 @@ export function AlertWorkflowActions({
               const newCase = createCase(alertId, { segment });
               router.push(`/cases/${newCase.id}`);
             }}
-            className="rounded-lg bg-[#6ea8fe] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#5b9cfb] transition-colors"
+            className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover transition-colors"
           >
             Create case
           </button>
@@ -234,7 +234,7 @@ export function AlertWorkflowActions({
                 <button
                   type="button"
                   onClick={assignToMe}
-                  className="rounded-lg bg-[#6ea8fe] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#5b9cfb] transition-colors"
+                  className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover transition-colors"
                 >
                   Assign to me
                 </button>
@@ -399,7 +399,7 @@ export function AlertWorkflowActions({
               onChange={(e) => setEscalateNote(e.target.value)}
               placeholder="Reason or context for escalation…"
               rows={3}
-              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-[#6ea8fe] resize-none"
+              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-brand resize-none"
             />
             <div className="flex justify-end gap-2 mt-4">
               <button
@@ -443,7 +443,7 @@ export function AlertWorkflowActions({
             <select
               value={requestInfoRecipient}
               onChange={(e) => setRequestInfoRecipient(e.target.value as "customer" | "ops")}
-              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#6ea8fe] mb-3"
+              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand mb-3"
             >
               <option value="customer">Customer</option>
               <option value="ops">Ops</option>
@@ -454,7 +454,7 @@ export function AlertWorkflowActions({
               onChange={(e) => setRequestInfoNote(e.target.value)}
               placeholder="e.g. Source of funds, business purpose…"
               rows={3}
-              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-[#6ea8fe] resize-none"
+              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-brand resize-none"
             />
             <div className="flex justify-end gap-2 mt-4">
               <button
@@ -470,7 +470,7 @@ export function AlertWorkflowActions({
               <button
                 type="button"
                 onClick={handleRequestInfo}
-                className="rounded-lg bg-[#6ea8fe] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#5b9cfb]"
+                className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover"
               >
                 Send request
               </button>
@@ -498,7 +498,7 @@ export function AlertWorkflowActions({
             <select
               value={disposition}
               onChange={(e) => setDisposition(e.target.value as OutcomeCode)}
-              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#6ea8fe] mb-3"
+              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand mb-3"
             >
               {DISPOSITION_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -512,7 +512,7 @@ export function AlertWorkflowActions({
               onChange={(e) => setRationale(e.target.value)}
               placeholder="Brief rationale for this disposition…"
               rows={3}
-              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-[#6ea8fe] resize-none"
+              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-brand resize-none"
             />
             <div className="flex justify-end gap-2 mt-4">
               <button
@@ -528,7 +528,7 @@ export function AlertWorkflowActions({
               <button
                 type="button"
                 onClick={handleClose}
-                className="rounded-lg bg-[#6ea8fe] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#5b9cfb]"
+                className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover"
               >
                 Close alert
               </button>

@@ -51,7 +51,7 @@ export function Nav() {
             onClick={() => setAssistantOpen(!assistantOpen)}
             className={`px-3 py-2 rounded-md text-sm font-medium transition-colors border ${
               assistantOpen
-                ? "bg-[#6ea8fe]/20 text-[#6ea8fe] border-[#6ea8fe]/60"
+                ? "bg-brand/20 text-brand border-brand/60"
                 : "text-[#8b9cad] border-[#8b9cad]/30 hover:text-white hover:bg-surface-overlay hover:border-[#8b9cad]/50"
             }`}
             aria-expanded={assistantOpen}

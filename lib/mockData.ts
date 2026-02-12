@@ -220,3 +220,177 @@ export const MOCK_RULE_PERFORMANCE_BY_SEGMENT: RulePerformanceBySegmentRow[] = [
   { ruleId: "ONB-SANCTIONS-EDGE", ruleName: "ONB-SANCTIONS-EDGE", category: "onboarding", segment: "saas", alertCount: 1, closedNoAction: 0, escalated: 0, sar: 0, approved: 0, denied: 0, open: 1, pctClosedNoAction: 0 },
   { ruleId: "ONB-SANCTIONS-EDGE", ruleName: "ONB-SANCTIONS-EDGE", category: "onboarding", segment: "fintech", alertCount: 1, closedNoAction: 0, escalated: 0, sar: 0, approved: 1, denied: 0, open: 0, pctClosedNoAction: 0 },
 ];
+
+// --- Additional strategist report mock data ---
+
+export interface AlertVolumeByRuleRow {
+  ruleId: string;
+  ruleName: string;
+  alertCount: number;
+  closedNoAction: number;
+  escalated: number;
+  sar: number;
+  open: number;
+  pctClosedNoAction: number;
+}
+
+function aggregateRulePerformanceByRule(): AlertVolumeByRuleRow[] {
+  const byRule: Record<string, AlertVolumeByRuleRow> = {};
+  for (const row of MOCK_RULE_PERFORMANCE_BY_SEGMENT) {
+    if (!byRule[row.ruleId]) {
+      byRule[row.ruleId] = {
+        ruleId: row.ruleId,
+        ruleName: row.ruleName,
+        alertCount: 0,
+        closedNoAction: 0,
+        escalated: 0,
+        sar: 0,
+        open: 0,
+        pctClosedNoAction: 0,
+      };
+    }
+    const r = byRule[row.ruleId];
+    r.alertCount += row.alertCount;
+    r.closedNoAction += row.closedNoAction;
+    r.escalated += row.escalated;
+    r.sar += row.sar;
+    r.open += row.open;
+  }
+  const rows = Object.values(byRule);
+  for (const r of rows) {
+    const resolved = r.closedNoAction + r.escalated + r.sar;
+    r.pctClosedNoAction = resolved > 0 ? Math.round((r.closedNoAction / resolved) * 100) : 0;
+  }
+  return rows.sort((a, b) => b.alertCount - a.alertCount);
+}
+
+export const MOCK_ALERT_VOLUME_BY_RULE: AlertVolumeByRuleRow[] = aggregateRulePerformanceByRule();
+
+export interface AlertVolumeByRiskTierStatusRow {
+  riskTier: RiskTier;
+  new: number;
+  in_review: number;
+  escalated: number;
+  closed: number;
+  total: number;
+}
+
+function deriveAlertVolumeByRiskTierStatus(): AlertVolumeByRiskTierStatusRow[] {
+  const counts: Record<RiskTier, Record<AlertStatus, number>> = {
+    high: { new: 0, in_review: 0, escalated: 0, closed: 0 },
+    medium: { new: 0, in_review: 0, escalated: 0, closed: 0 },
+    low: { new: 0, in_review: 0, escalated: 0, closed: 0 },
+  };
+  for (const a of MOCK_ALERTS) {
+    counts[a.riskTier][a.status]++;
+  }
+  return (["high", "medium", "low"] as const).map((riskTier) => {
+    const c = counts[riskTier];
+    const total = c.new + c.in_review + c.escalated + c.closed;
+    return {
+      riskTier,
+      new: c.new,
+      in_review: c.in_review,
+      escalated: c.escalated,
+      closed: c.closed,
+      total,
+    };
+  });
+}
+
+export const MOCK_ALERT_VOLUME_BY_RISK_TIER_STATUS: AlertVolumeByRiskTierStatusRow[] =
+  deriveAlertVolumeByRiskTierStatus();
+
+export interface CaseResolutionByPeriodRow {
+  period: string;
+  closedNoAction: number;
+  escalated: number;
+  sar: number;
+  totalClosed: number;
+}
+
+export const MOCK_CASE_RESOLUTION_BY_PERIOD: CaseResolutionByPeriodRow[] = [
+  { period: "2025-02-04 – 2025-02-10", closedNoAction: 18, escalated: 4, sar: 1, totalClosed: 23 },
+  { period: "2025-01-28 – 2025-02-03", closedNoAction: 22, escalated: 3, sar: 2, totalClosed: 27 },
+  { period: "2025-01-21 – 2025-01-27", closedNoAction: 15, escalated: 5, sar: 0, totalClosed: 20 },
+  { period: "2025-01-14 – 2025-01-20", closedNoAction: 20, escalated: 2, sar: 1, totalClosed: 23 },
+];
+
+export interface OnboardingReferralsByOutcomeRow {
+  segment: string;
+  approved: number;
+  denied: number;
+  escalated: number;
+  open: number;
+  total: number;
+}
+
+export const MOCK_ONBOARDING_REFERRALS_BY_OUTCOME: OnboardingReferralsByOutcomeRow[] = [
+  { segment: "ecommerce", approved: 1, denied: 0, escalated: 0, open: 1, total: 2 },
+  { segment: "saas", approved: 3, denied: 0, escalated: 2, open: 3, total: 8 },
+  { segment: "fintech", approved: 1, denied: 0, escalated: 0, open: 0, total: 1 },
+];
+
+export interface TriageSlaRow {
+  riskTier: RiskTier;
+  medianHours: number;
+  p90Hours: number;
+  alertCount: number;
+}
+
+export const MOCK_TRIAGE_SLA: TriageSlaRow[] = [
+  { riskTier: "high", medianHours: 4, p90Hours: 12, alertCount: 9 },
+  { riskTier: "medium", medianHours: 12, p90Hours: 24, alertCount: 9 },
+  { riskTier: "low", medianHours: 24, p90Hours: 48, alertCount: 6 },
+];
+
+export interface EscalationSummaryRow {
+  segment: string;
+  escalationCount: number;
+  topRules: string[];
+}
+
+function deriveEscalationSummary(): EscalationSummaryRow[] {
+  const bySegment: Record<string, { count: number; rules: Record<string, number> }> = {};
+  for (const a of MOCK_ALERTS) {
+    if (a.status !== "escalated") continue;
+    const seg = a.segment ?? "unknown";
+    if (!bySegment[seg]) bySegment[seg] = { count: 0, rules: {} };
+    bySegment[seg].count++;
+    for (const r of a.ruleNames) {
+      bySegment[seg].rules[r] = (bySegment[seg].rules[r] ?? 0) + 1;
+    }
+  }
+  return Object.entries(bySegment).map(([segment, { count, rules }]) => ({
+    segment,
+    escalationCount: count,
+    topRules: Object.entries(rules)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([rule]) => rule),
+  }));
+}
+
+export const MOCK_ESCALATION_SUMMARY: EscalationSummaryRow[] = deriveEscalationSummary();
+
+export interface SarSummaryBySegmentRow {
+  segment: string;
+  sarCount: number;
+}
+
+export interface SarSummaryByRuleRow {
+  ruleName: string;
+  sarCount: number;
+}
+
+export const MOCK_SAR_SUMMARY_BY_SEGMENT: SarSummaryBySegmentRow[] = [
+  { segment: "ecommerce", sarCount: 1 },
+  { segment: "saas", sarCount: 0 },
+  { segment: "fintech", sarCount: 2 },
+];
+
+export const MOCK_SAR_SUMMARY_BY_RULE: SarSummaryByRuleRow[] = [
+  { ruleName: "TM-INTL-WIRE-VELOCITY", sarCount: 1 },
+  { ruleName: "TM-STRUCTURING", sarCount: 1 },
+  { ruleName: "TM-CASH-INTENSIVE", sarCount: 1 },
+];

@@ -48,14 +48,14 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
           <ul className="list-disc list-inside text-sm">
             {alert.ruleNames.map((r) => (
               <li key={r}>
-                <Link href={`/rules#${r}`} className="text-[#6ea8fe] hover:underline font-mono">
+                <Link href={`/rules#${r}`} className="text-brand hover:underline font-mono">
                   {r}
                 </Link>
               </li>
             ))}
           </ul>
           <p className="text-xs text-[#8b9cad] mt-2">
-            <Link href="/rules" className="text-[#6ea8fe] hover:underline">Rules reference</Link> for definitions and thresholds.
+            <Link href="/rules" className="text-brand hover:underline">Rules reference</Link> for definitions and thresholds.
           </p>
         </section>
 
@@ -98,7 +98,7 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
                 const newCase = createCase(alert.id, { segment: alert.segment });
                 router.push(`/cases/${newCase.id}`);
               }}
-              className="rounded-lg bg-[#6ea8fe] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#5b9cfb] transition-colors"
+              className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover transition-colors"
             >
               Create case
             </button>
@@ -109,7 +109,7 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
             <p className="text-sm">
               <Link
                 href={`/cases/${relatedCase.id}`}
-                className="text-[#6ea8fe] hover:underline font-medium"
+                className="text-brand hover:underline font-medium"
               >
                 {relatedCase.id}
               </Link>
@@ -122,7 +122,7 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
             </p>
             <Link
               href={`/cases/${relatedCase.id}`}
-              className="inline-block mt-2 text-sm text-[#6ea8fe] hover:underline"
+              className="inline-block mt-2 text-sm text-brand hover:underline"
             >
               Open case →
             </Link>
@@ -150,11 +150,11 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
                   const otherAlert = MOCK_ALERTS.find((a) => a.id === c.alertId);
                   return (
                     <li key={c.id} className="text-sm flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <Link href={`/cases/${c.id}`} className="text-[#6ea8fe] hover:underline font-medium">
+                      <Link href={`/cases/${c.id}`} className="text-brand hover:underline font-medium">
                         {c.id}
                       </Link>
                       <span className="text-[#8b9cad]">
-                        alert <Link href={`/alerts/${c.alertId}`} className="text-[#6ea8fe] hover:underline font-mono">{c.alertId}</Link>
+                        alert <Link href={`/alerts/${c.alertId}`} className="text-brand hover:underline font-mono">{c.alertId}</Link>
                         {otherAlert && ` · ${otherAlert.segment ?? "—"}`} · {c.outcome != null ? c.outcome.replace(/_/g, " ") : "Open"}
                       </span>
                       <span className="text-[#8b9cad] text-xs">

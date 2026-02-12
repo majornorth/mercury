@@ -176,7 +176,7 @@ export function CaseWorkflowActions({ caseId }: CaseWorkflowActionsProps) {
     <section className="rounded-lg border border-border bg-surface-elevated p-4">
       <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Workflow actions</h2>
       {actionMessage && (
-        <p className="text-sm text-[#6ea8fe] mb-3 rounded bg-[#6ea8fe]/10 px-2 py-1.5 border border-[#6ea8fe]/30">
+        <p className="text-sm text-brand mb-3 rounded bg-brand/10 px-2 py-1.5 border border-brand/30">
           {actionMessage}
         </p>
       )}
@@ -205,7 +205,7 @@ export function CaseWorkflowActions({ caseId }: CaseWorkflowActionsProps) {
                 <button
                   type="button"
                   onClick={assignToMe}
-                  className="rounded-lg bg-[#6ea8fe] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#5b9cfb] transition-colors"
+                  className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover transition-colors"
                 >
                   Assign to me
                 </button>
@@ -340,7 +340,7 @@ export function CaseWorkflowActions({ caseId }: CaseWorkflowActionsProps) {
               onChange={(e) => setEscalateNote(e.target.value)}
               placeholder="Reason or context for escalation…"
               rows={3}
-              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-[#6ea8fe] resize-none"
+              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-brand resize-none"
             />
             <div className="flex justify-end gap-2 mt-4">
               <button type="button" onClick={() => { setEscalateModalOpen(false); setEscalateNote(""); }} className="rounded-lg border border-border px-3 py-1.5 text-sm text-[#8b9cad] hover:text-white">Cancel</button>
@@ -357,15 +357,15 @@ export function CaseWorkflowActions({ caseId }: CaseWorkflowActionsProps) {
             <h3 id="case-request-info-title" className="text-sm font-semibold text-white mb-2">Request info</h3>
             <p className="text-xs text-[#8b9cad] mb-3">Request information from customer or ops. Recorded for audit.</p>
             <label className="block text-xs font-medium text-[#8b9cad] mb-1">Recipient</label>
-            <select value={requestInfoRecipient} onChange={(e) => setRequestInfoRecipient(e.target.value as "customer" | "ops")} className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#6ea8fe] mb-3">
+            <select value={requestInfoRecipient} onChange={(e) => setRequestInfoRecipient(e.target.value as "customer" | "ops")} className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand mb-3">
               <option value="customer">Customer</option>
               <option value="ops">Ops</option>
             </select>
             <label className="block text-xs font-medium text-[#8b9cad] mb-1">What to request (optional)</label>
-            <textarea value={requestInfoNote} onChange={(e) => setRequestInfoNote(e.target.value)} placeholder="e.g. Source of funds, business purpose…" rows={3} className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-[#6ea8fe] resize-none" />
+            <textarea value={requestInfoNote} onChange={(e) => setRequestInfoNote(e.target.value)} placeholder="e.g. Source of funds, business purpose…" rows={3} className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-brand resize-none" />
             <div className="flex justify-end gap-2 mt-4">
               <button type="button" onClick={() => { setRequestInfoModalOpen(false); setRequestInfoNote(""); }} className="rounded-lg border border-border px-3 py-1.5 text-sm text-[#8b9cad] hover:text-white">Cancel</button>
-              <button type="button" onClick={handleRequestInfo} className="rounded-lg bg-[#6ea8fe] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#5b9cfb]">Send request</button>
+              <button type="button" onClick={handleRequestInfo} className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover">Send request</button>
             </div>
           </div>
         </div>
@@ -378,16 +378,16 @@ export function CaseWorkflowActions({ caseId }: CaseWorkflowActionsProps) {
             <h3 id="case-close-title" className="text-sm font-semibold text-white mb-2">Close case</h3>
             <p className="text-xs text-[#8b9cad] mb-3">Document disposition and rationale for audit.</p>
             <label className="block text-xs font-medium text-[#8b9cad] mb-1">Disposition</label>
-            <select value={disposition} onChange={(e) => setDisposition(e.target.value as OutcomeCode)} className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#6ea8fe] mb-3">
+            <select value={disposition} onChange={(e) => setDisposition(e.target.value as OutcomeCode)} className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand mb-3">
               {DISPOSITION_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
             <label className="block text-xs font-medium text-[#8b9cad] mb-1">Rationale</label>
-            <textarea value={rationale} onChange={(e) => setRationale(e.target.value)} placeholder="Brief rationale for this disposition…" rows={3} className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-[#6ea8fe] resize-none" />
+            <textarea value={rationale} onChange={(e) => setRationale(e.target.value)} placeholder="Brief rationale for this disposition…" rows={3} className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-brand resize-none" />
             <div className="flex justify-end gap-2 mt-4">
               <button type="button" onClick={() => { setCloseModalOpen(false); setRationale(""); }} className="rounded-lg border border-border px-3 py-1.5 text-sm text-[#8b9cad] hover:text-white">Cancel</button>
-              <button type="button" onClick={handleClose} className="rounded-lg bg-[#6ea8fe] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#5b9cfb]">Close case</button>
+              <button type="button" onClick={handleClose} className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover">Close case</button>
             </div>
           </div>
         </div>

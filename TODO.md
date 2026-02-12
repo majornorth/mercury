@@ -86,7 +86,9 @@ Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [Technical Design](docs/
 |------|--------|
 | Custom view (tables + filters) with mock data; “Strategist-created” labeling | [x] |
 | Custom reports: strategist-oriented analytical tables (outcomes by segment, rule performance by segment) | [x] |
+| Dashboard: right sidebar report list with Create report and search | [x] |
 | Add report button on Dashboard opens Assistant with add-report context (NL request for custom report) | [x] |
+| Additional strategist reports (alert volume by rule, risk tier/status, case resolution, onboarding referrals, SLA, escalations, SAR summary) with mock data and views | [x] |
 | Natural language → view spec (LLM + allowlisted schema) | [ ] |
 | View Engine: spec execution, allowlist, RBAC at execution time | [ ] |
 | Save/view/template: versioning, diff, rollback | [ ] |
@@ -131,4 +133,4 @@ Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [Technical Design](docs/
 
 ---
 
-*Last updated: 2025-02-12 — Dashboard as primary view (/) with custom reports; Alerts at /alerts; Add report opens Assistant with add-report context.*
+*Last updated: 2025-02-12 — Dashboard with right sidebar, Create report, and 8 strategist reports (rule perf/outcomes, alert volume by rule, by risk tier/status, case resolution over time, onboarding referrals, time to triage SLA, escalations, SAR summary).*

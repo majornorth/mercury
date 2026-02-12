@@ -47,12 +47,12 @@ export default function AuditPage() {
                 <td className="px-4 py-3">{EVENT_LABELS[e.eventType]}</td>
                 <td className="px-4 py-3">
                   {e.resourceType === "alert" && (
-                    <Link href={`/alerts/${e.resourceId}`} className="text-[#6ea8fe] hover:underline font-mono text-xs">
+                    <Link href={`/alerts/${e.resourceId}`} className="text-brand hover:underline font-mono text-xs">
                       {e.resourceId}
                     </Link>
                   )}
                   {e.resourceType === "case" && (
-                    <Link href={`/cases/${e.resourceId}`} className="text-[#6ea8fe] hover:underline font-mono text-xs">
+                    <Link href={`/cases/${e.resourceId}`} className="text-brand hover:underline font-mono text-xs">
                       {e.resourceId}
                     </Link>
                   )}

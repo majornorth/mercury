@@ -39,7 +39,7 @@ export function CaseList() {
                 <td className="px-4 py-3">
                   <Link
                     href={`/alerts/${c.alertId}`}
-                    className="font-mono text-[#6ea8fe] hover:underline"
+                    className="font-mono text-brand hover:underline"
                   >
                     {c.alertId}
                   </Link>
@@ -61,7 +61,7 @@ export function CaseList() {
                 <td className="px-4 py-3">
                   <Link
                     href={`/cases/${c.id}`}
-                    className="text-[#6ea8fe] hover:underline text-xs font-medium"
+                    className="text-brand hover:underline text-xs font-medium"
                   >
                     Open
                   </Link>
