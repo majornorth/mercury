@@ -10,7 +10,7 @@ export default function CasesLayout({
       <div className="mb-2">
         <h1 className="text-xl font-semibold text-white">Cases</h1>
         <p className="text-sm text-[#8b9cad] mt-1">
-          Investigation cases and pattern view. List view for case work; Patterns for behavior archetypes and resolution prevalence.
+          Investigation cases, patterns, QC, and appeals. List for case work; Patterns for archetypes; QC for scorecards and performance; Appeals for intake and adjudication (v4).
         </p>
       </div>
       <CasesSubNav />

@@ -2,11 +2,12 @@
 
 import { Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getMergedCases } from "@/lib/caseStore";
 import { getCasePatternsFromCases, getCaseIdsByArchetype, type BehaviorArchetypeId } from "@/lib/mockData";
 
 function CasePatternsContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const highlightArchetype = searchParams.get("archetype") as BehaviorArchetypeId | null;
   const merged = getMergedCases();
@@ -28,14 +29,22 @@ function CasePatternsContent() {
               <th className="px-4 py-3 font-medium text-[#8b9cad] text-right">Escalated %</th>
               <th className="px-4 py-3 font-medium text-[#8b9cad] text-right">SAR %</th>
               <th className="px-4 py-3 font-medium text-[#8b9cad] text-right">Open</th>
-              <th className="px-4 py-3 font-medium text-[#8b9cad]"></th>
             </tr>
           </thead>
           <tbody>
             {patterns.map((p) => (
               <tr
                 key={p.archetypeId}
-                className={`border-b border-border/50 ${highlightArchetype === p.archetypeId ? "bg-brand/10" : ""}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push(`/cases/patterns?archetype=${p.archetypeId}`)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(`/cases/patterns?archetype=${p.archetypeId}`);
+                  }
+                }}
+                className={`border-b border-border/50 cursor-pointer hover:bg-surface-overlay/30 ${highlightArchetype === p.archetypeId ? "bg-brand/10" : ""}`}
               >
                 <td className="px-4 py-3 font-medium text-white">{p.label}</td>
                 <td className="px-4 py-3 text-right text-white">{p.caseCount}</td>
@@ -43,14 +52,6 @@ function CasePatternsContent() {
                 <td className="px-4 py-3 text-right text-[#8b9cad]">{p.pctEscalated}%</td>
                 <td className="px-4 py-3 text-right text-[#8b9cad]">{p.pctSar}%</td>
                 <td className="px-4 py-3 text-right text-[#8b9cad]">{p.open}</td>
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/cases/patterns?archetype=${p.archetypeId}`}
-                    className="text-brand hover:underline text-xs"
-                  >
-                    View cases →
-                  </Link>
-                </td>
               </tr>
             ))}
           </tbody>

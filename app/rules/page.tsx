@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { RULES_REFERENCE } from "@/lib/rulesReference";
 import { RuleSimulation } from "@/components/RuleSimulation";
 
@@ -26,6 +27,19 @@ export default function RulesPage() {
         <p className="text-sm text-[#8b9cad] mt-1">
           Rule definitions for explainability. Links from alert rule hits point here. In production, replace with policy/rule engine data.
         </p>
+      </div>
+
+      <div className="rounded-lg border border-border bg-surface-elevated p-4 mb-6">
+        <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Policy lifecycle (v4)</h2>
+        <p className="text-xs text-[#8b9cad] mb-2">
+          Draft → review → approval → staged deploy → full rollout → rollback. Immutable version artifacts for lineage and replay.
+        </p>
+        <div className="text-sm text-white flex flex-wrap gap-x-4 gap-y-1">
+          <span><span className="text-[#8b9cad]">Current version:</span> AML-ONB-2025-Q1</span>
+          <span><span className="text-[#8b9cad]">State:</span> Active</span>
+          <span><span className="text-[#8b9cad]">Last rollout:</span> 2025-02-01</span>
+          <Link href="/rules/history" className="text-brand hover:underline">View history</Link>
+        </div>
       </div>
 
       <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4 mb-6">

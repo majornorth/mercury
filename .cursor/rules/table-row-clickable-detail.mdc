@@ -1,0 +1,43 @@
+---
+description: Use clickable table rows for detail navigation instead of a link column
+globs: "**/*.tsx,**/*.jsx,**/*.vue"
+alwaysApply: false
+---
+
+# Table Rows and Detail Views
+
+When a table lists items that have a detail view (e.g. case details, entity profile, record view):
+
+- **Do not** add a separate link/button column on the right (e.g. "View" or an arrow) as the only way to open the detail.
+- **Do** make the entire table row clickable and navigate to the detail view when the row is clicked.
+
+This improves UX (larger click target, clearer affordance) and keeps the table cleaner.
+
+## Implementation
+
+- Attach `onClick` (or equivalent) to the row element (`<tr>`, or the wrapper component for each row).
+- Use `cursor: pointer` and optional hover styling so the row clearly looks interactive.
+- Ensure keyboard accessibility (e.g. row is focusable and Enter/Space triggers navigation, or provide a visible skip link for keyboard users).
+- If you need a separate control (e.g. menu or secondary action), keep it in addition to the row click; the primary navigation should still be the row click.
+
+## Example
+
+```tsx
+// Prefer: clickable row
+<tr
+  onClick={() => navigate(`/cases/${row.id}`)}
+  className="cursor-pointer hover:bg-muted/50"
+>
+  <td>{row.id}</td>
+  <td>{row.name}</td>
+  <td>{row.status}</td>
+</tr>
+
+// Avoid: link only in last column
+<tr>
+  <td>{row.id}</td>
+  <td>{row.name}</td>
+  <td>{row.status}</td>
+  <td><Link to={`/cases/${row.id}`}>View →</Link></td>
+</tr>
+```

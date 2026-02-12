@@ -651,29 +651,33 @@ export const MOCK_SYSTEM_HEALTH: SystemHealthSummary = deriveSystemHealthSummary
 
 // --- v3 Pillar 1: Signal explainability — feature-level drivers per rule hit ---
 
+export type DriverConfidence = "low" | "medium" | "high";
+
 export interface RuleHitDriver {
   featureName: string;
   value: string | number;
   thresholdOrTier: string;
   evidenceType: "transaction" | "account" | "rule";
   evidenceLabel: string;
+  /** v4: confidence when upstream provides it */
+  confidence?: DriverConfidence;
 }
 
 /** alertId -> ruleId -> drivers (why this rule fired on this alert). */
 export const MOCK_RULE_HIT_DRIVERS: Record<string, Record<string, RuleHitDriver[]>> = {
   "alt-001": {
     "TM-INTL-WIRE-VELOCITY": [
-      { featureName: "Wire count (7-day)", value: 5, thresholdOrTier: "≥ 3", evidenceType: "transaction", evidenceLabel: "View transactions" },
-      { featureName: "Top counterparty jurisdiction", value: "Tier 2", thresholdOrTier: "Tier 2+ flags", evidenceType: "account", evidenceLabel: "Account attributes" },
+      { featureName: "Wire count (7-day)", value: 5, thresholdOrTier: "≥ 3", evidenceType: "transaction", evidenceLabel: "View transactions", confidence: "high" },
+      { featureName: "Top counterparty jurisdiction", value: "Tier 2", thresholdOrTier: "Tier 2+ flags", evidenceType: "account", evidenceLabel: "Account attributes", confidence: "low" },
     ],
     "TM-LARGE-SINGLE": [
-      { featureName: "Largest wire (USD)", value: 62000, thresholdOrTier: "> 50,000", evidenceType: "transaction", evidenceLabel: "View transactions" },
+      { featureName: "Largest wire (USD)", value: 62000, thresholdOrTier: "> 50,000", evidenceType: "transaction", evidenceLabel: "View transactions", confidence: "high" },
     ],
   },
   "alt-002": {
     "ONB-BENEFICIAL-OWNER": [
-      { featureName: "Ownership depth", value: 4, thresholdOrTier: "> 3 layers", evidenceType: "account", evidenceLabel: "KYC / beneficial owner" },
-      { featureName: "PEP match score", value: 0.72, thresholdOrTier: "> 0.6 review", evidenceType: "account", evidenceLabel: "Account attributes" },
+      { featureName: "Ownership depth", value: 4, thresholdOrTier: "> 3 layers", evidenceType: "account", evidenceLabel: "KYC / beneficial owner", confidence: "medium" },
+      { featureName: "PEP match score", value: 0.72, thresholdOrTier: "> 0.6 review", evidenceType: "account", evidenceLabel: "Account attributes", confidence: "low" },
     ],
   },
   "alt-003": {

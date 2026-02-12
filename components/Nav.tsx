@@ -10,7 +10,9 @@ const navItems = [
   { href: "/reports", label: "Reports" },
   { href: "/alerts", label: "Alerts" },
   { href: "/cases", label: "Cases" },
+  { href: "/queues", label: "Queues" },
   { href: "/rules", label: "Rules" },
+  { href: "/exports", label: "Exports" },
   { href: "/audit", label: "Audit" },
 ];
 
@@ -28,7 +30,11 @@ export function Nav() {
           </Link>
           <nav className="flex gap-1">
             {navItems.map(({ href, label }) => {
-              const isActive = pathname === href || (href === "/cases" && pathname.startsWith("/cases"));
+              const isActive =
+                pathname === href ||
+                (href === "/cases" && pathname.startsWith("/cases")) ||
+                (href === "/queues" && pathname.startsWith("/queues")) ||
+                (href === "/exports" && pathname.startsWith("/exports"));
               return (
                 <Link
                   key={href}

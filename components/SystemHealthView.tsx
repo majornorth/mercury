@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MOCK_SYSTEM_HEALTH } from "@/lib/mockData";
 
 export function SystemHealthView() {
+  const router = useRouter();
   const h = MOCK_SYSTEM_HEALTH;
   const { thisWeek, lastWeek, pctChange } = h.alertVolumeVsBaseline;
 
@@ -17,7 +19,7 @@ export function SystemHealthView() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <section className="rounded-lg border border-border bg-surface-elevated p-4">
+        <section className="rounded-lg border border-border bg-surface-elevated p-4 flex flex-col">
           <h2 className="text-xs font-medium text-[#8b9cad] uppercase tracking-wide mb-2">
             Alert volume vs baseline
           </h2>
@@ -30,12 +32,12 @@ export function SystemHealthView() {
               {pctChange > 0 ? "+" : ""}{pctChange}%
             </span>
           </p>
-          <Link href="/alerts" className="inline-block mt-2 text-sm text-brand hover:underline">
+          <Link href="/alerts" className="mt-auto inline-block text-sm text-brand hover:underline">
             View alerts →
           </Link>
         </section>
 
-        <section className="rounded-lg border border-border bg-surface-elevated p-4">
+        <section className="rounded-lg border border-border bg-surface-elevated p-4 flex flex-col">
           <h2 className="text-xs font-medium text-[#8b9cad] uppercase tracking-wide mb-2">
             False-positive proxy
           </h2>
@@ -43,12 +45,12 @@ export function SystemHealthView() {
           <p className="text-sm text-[#8b9cad] mt-1">
             % of resolved alerts closed with no action (proxy for FP rate)
           </p>
-          <Link href="/reports" className="inline-block mt-2 text-sm text-brand hover:underline">
+          <Link href="/reports" className="mt-auto inline-block text-sm text-brand hover:underline">
             Rule performance by segment →
           </Link>
         </section>
 
-        <section className="rounded-lg border border-border bg-surface-elevated p-4">
+        <section className="rounded-lg border border-border bg-surface-elevated p-4 flex flex-col">
           <h2 className="text-xs font-medium text-[#8b9cad] uppercase tracking-wide mb-2">
             Investigator override rate
           </h2>
@@ -56,17 +58,17 @@ export function SystemHealthView() {
           <p className="text-sm text-[#8b9cad] mt-1">
             Overrode rule or system recommendation
           </p>
-          <Link href="/cases" className="inline-block mt-2 text-sm text-brand hover:underline">
+          <Link href="/cases" className="mt-auto inline-block text-sm text-brand hover:underline">
             View cases →
           </Link>
         </section>
 
-        <section className="rounded-lg border border-border bg-surface-elevated p-4">
+        <section className="rounded-lg border border-border bg-surface-elevated p-4 flex flex-col">
           <h2 className="text-xs font-medium text-[#8b9cad] uppercase tracking-wide mb-2">
             Top rule contributors
           </h2>
           <p className="text-sm text-[#8b9cad] mb-2">By volume and by override</p>
-          <Link href="/rules" className="inline-block text-sm text-brand hover:underline">
+          <Link href="/rules" className="mt-auto inline-block text-sm text-brand hover:underline">
             Rules reference →
           </Link>
         </section>
@@ -83,19 +85,25 @@ export function SystemHealthView() {
                 <tr className="border-b border-border bg-surface-overlay/50">
                   <th className="px-4 py-2 font-medium">Rule</th>
                   <th className="px-4 py-2 font-medium text-right">Alerts</th>
-                  <th className="px-4 py-2 w-20" />
                 </tr>
               </thead>
               <tbody>
                 {h.topRulesByVolume.map((row) => (
-                  <tr key={row.ruleId} className="border-b border-border/50">
+                  <tr
+                    key={row.ruleId}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => router.push(`/rules#${row.ruleId}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        router.push(`/rules#${row.ruleId}`);
+                      }
+                    }}
+                    className="border-b border-border/50 cursor-pointer hover:bg-surface-overlay/30"
+                  >
                     <td className="px-4 py-2 font-mono text-xs text-white">{row.ruleName}</td>
                     <td className="px-4 py-2 text-right text-white">{row.alertCount}</td>
-                    <td className="px-4 py-2">
-                      <Link href={`/rules#${row.ruleId}`} className="text-brand hover:underline text-xs">
-                        View rule
-                      </Link>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -108,14 +116,14 @@ export function SystemHealthView() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-border bg-surface-elevated overflow-hidden">
+        <section className="rounded-lg border border-border bg-surface-elevated overflow-hidden flex flex-col">
           <h2 className="px-4 py-3 border-b border-border text-sm font-medium text-[#8b9cad]">
             Top rules by override / closed no action
           </h2>
           <p className="px-4 pt-2 text-xs text-[#8b9cad]">
             Rules that contribute most to investigator overrides (proxy for tuning candidates).
           </p>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto flex-1 min-h-0">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-overlay/50">
@@ -135,7 +143,7 @@ export function SystemHealthView() {
               </tbody>
             </table>
           </div>
-          <div className="px-4 py-2 border-t border-border">
+          <div className="px-4 py-2 border-t border-border mt-auto">
             <Link href="/rules" className="text-sm text-brand hover:underline">
               Rules reference & impact →
             </Link>

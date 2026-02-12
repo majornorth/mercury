@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getAllAuditEntries } from "@/lib/mockAudit";
-import type { AuditEventType } from "@/lib/mockAudit";
+import type { AuditEventType, AuditPurpose } from "@/lib/mockAudit";
 
 const EVENT_LABELS: Record<AuditEventType, string> = {
   data_access: "Data access",
@@ -55,9 +55,31 @@ function SortableTh({
   );
 }
 
+const PURPOSE_OPTIONS: { value: "" | AuditPurpose; label: string }[] = [
+  { value: "", label: "All purposes" },
+  { value: "investigation", label: "Investigation" },
+  { value: "qa", label: "QA" },
+  { value: "exam_response", label: "Exam response" },
+  { value: "other", label: "Other" },
+];
+
+function purposeLabel(p?: AuditPurpose): string {
+  if (!p) return "—";
+  return p === "exam_response" ? "Exam response" : p === "qa" ? "QA" : p.charAt(0).toUpperCase() + p.slice(1);
+}
+
+function getResourceHref(e: { resourceType: string; resourceId: string }): string | null {
+  if (e.resourceType === "alert") return `/alerts/${e.resourceId}`;
+  if (e.resourceType === "case") return `/cases/${e.resourceId}`;
+  if (e.resourceType === "rule") return `/rules#${e.resourceId}`;
+  return null;
+}
+
 export default function AuditPage() {
+  const router = useRouter();
   const [sortKey, setSortKey] = useState<SortKey | null>("time");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [purposeFilter, setPurposeFilter] = useState<"" | AuditPurpose>("");
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -69,7 +91,10 @@ export default function AuditPage() {
   };
 
   const entries = useMemo(() => {
-    const list = getAllAuditEntries();
+    let list = getAllAuditEntries();
+    if (purposeFilter) {
+      list = list.filter((e) => e.purpose === purposeFilter);
+    }
     if (!sortKey) return list;
     list.sort((a, b) => {
       let cmp = 0;
@@ -97,7 +122,7 @@ export default function AuditPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return list;
-  }, [sortKey, sortDir]);
+  }, [sortKey, sortDir, purposeFilter]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -109,6 +134,22 @@ export default function AuditPage() {
         <p className="text-xs text-[#8b9cad] mt-2 rounded bg-surface-overlay/50 px-2 py-1.5 inline-block">
           System status: Operational (mock). In production, this would reflect real health checks.
         </p>
+        <div className="mt-3 rounded-lg border border-border bg-surface-elevated/80 p-3 text-xs text-[#8b9cad]">
+          <strong className="text-white">v4 audit depth:</strong> Need-to-know RBAC and purpose-based access (e.g. investigation, QA, exam response) will tag access events. Append-only store with retention rules and legal-hold controls; audit queries for exams and legal requests. Backend TBD.
+        </div>
+        <div className="mt-3 flex items-center gap-2">
+          <label htmlFor="audit-purpose" className="text-sm text-[#8b9cad]">Purpose (v4):</label>
+          <select
+            id="audit-purpose"
+            value={purposeFilter}
+            onChange={(e) => setPurposeFilter(e.target.value as "" | AuditPurpose)}
+            className="rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand"
+          >
+            {PURPOSE_OPTIONS.map((o) => (
+              <option key={o.value || "all"} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="rounded-lg border border-border bg-surface-elevated overflow-hidden">
@@ -150,39 +191,37 @@ export default function AuditPage() {
                 sortDir={sortDir}
                 onSort={handleSort}
               />
+              <th className="px-4 py-3 font-medium text-[#8b9cad]">Purpose</th>
             </tr>
           </thead>
           <tbody>
-            {entries.map((e, i) => (
-              <tr key={i} className="border-b border-border/50 hover:bg-surface-overlay/30">
-                <td className="px-4 py-3 text-[#8b9cad] whitespace-nowrap">
-                  {new Date(e.at).toLocaleString()}
-                </td>
-                <td className="px-4 py-3 font-mono text-xs text-[#8b9cad]">{e.actorId}</td>
-                <td className="px-4 py-3">{EVENT_LABELS[e.eventType]}</td>
-                <td className="px-4 py-3">
-                  {e.resourceType === "alert" && (
-                    <Link href={`/alerts/${e.resourceId}`} className="text-brand hover:underline font-mono text-xs">
-                      {e.resourceId}
-                    </Link>
-                  )}
-                  {e.resourceType === "case" && (
-                    <Link href={`/cases/${e.resourceId}`} className="text-brand hover:underline font-mono text-xs">
-                      {e.resourceId}
-                    </Link>
-                  )}
-                  {e.resourceType === "rule" && (
-                    <Link href={`/rules#${e.resourceId}`} className="text-brand hover:underline font-mono text-xs">
-                      {e.resourceId}
-                    </Link>
-                  )}
-                  {e.resourceType !== "alert" && e.resourceType !== "case" && e.resourceType !== "rule" && (
-                    <span className="font-mono text-xs text-[#8b9cad]">{e.resourceId}</span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-[#8b9cad]">{e.details ?? "—"}</td>
-              </tr>
-            ))}
+            {entries.map((e, i) => {
+              const href = getResourceHref(e);
+              return (
+                <tr
+                  key={i}
+                  role={href ? "button" : undefined}
+                  tabIndex={href ? 0 : undefined}
+                  onClick={() => href && router.push(href)}
+                  onKeyDown={(ev) => {
+                    if (href && (ev.key === "Enter" || ev.key === " ")) {
+                      ev.preventDefault();
+                      router.push(href);
+                    }
+                  }}
+                  className={`border-b border-border/50 hover:bg-surface-overlay/30 ${href ? "cursor-pointer" : ""}`}
+                >
+                  <td className="px-4 py-3 text-[#8b9cad] whitespace-nowrap">
+                    {new Date(e.at).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-[#8b9cad]">{e.actorId}</td>
+                  <td className="px-4 py-3">{EVENT_LABELS[e.eventType]}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-[#8b9cad]">{e.resourceId}</td>
+                  <td className="px-4 py-3 text-[#8b9cad]">{e.details ?? "—"}</td>
+                  <td className="px-4 py-3 text-[#8b9cad] text-xs">{purposeLabel(e.purpose)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

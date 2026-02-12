@@ -2,7 +2,7 @@
 
 Status key: `[x]` Done · `[ ]` Not started · `[-]` In progress / partial
 
-Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [PRD v2 (Strategist Control Plane)](docs/PRD-Risk-Operations-Platform-v2.md), [PRD v3 (Signal Explainability, Case Patterns, Simulation)](docs/PRD-Risk-Operations-Platform-v3.md), [Technical Design](docs/Technical-Design-Risk-Operations-Platform.md).
+Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [PRD v2 (Strategist Control Plane)](docs/PRD-Risk-Operations-Platform-v2.md), [PRD v3 (Signal Explainability, Case Patterns, Simulation)](docs/PRD-Risk-Operations-Platform-v3.md), [PRD v4 (Operational Scale & Exam Readiness)](docs/PRD-Risk-Operations-Platform-v4.md), [Technical Design](docs/Technical-Design-Risk-Operations-Platform.md).
 
 ---
 
@@ -161,4 +161,34 @@ See [PRD v3](docs/PRD-Risk-Operations-Platform-v3.md) for signal explainability,
 
 ---
 
-*Last updated: 2025-02-12 — Case Patterns moved under Cases (List | Patterns sub-nav).*
+## 13. v4 (Operational Scale & Exam Readiness)
+
+See [PRD v4](docs/PRD-Risk-Operations-Platform-v4.md) for governance, QC/BPO case management, queue/SLA, exports, audit depth, explainability contestability, and customer-impact workflows. Work items below are derived from v4 gaps.
+
+| Item | Status |
+|------|--------|
+| **Gap 1 — Rule and model governance:** Policy lifecycle (draft → review → approval → staged deploy → rollout → rollback); immutable version artifacts; event-sourced decisioning for replay/lineage | [ ] |
+| **Gap 2 — Case and QC:** Structured evidence checklist by alert type; QC module (scorecards, defect taxonomy, sampling, calibration); investigator/vendor performance views; multi-author workflows with locked sections | [ ] |
+| **Gap 3 — Queue and SLA:** Multi-queue triage (rail, severity, segment, due date); SLA clocks (triage, first action, closure) and breach handling; explicit escalation paths with templated handoffs | [ ] |
+| **Gap 4 — Evidence packages and exports:** Export bundles (redacted case packets); configurable redaction and field-level entitlements; export templating and audit (who, when, purpose) | [ ] |
+| **Gap 5 — RBAC and audit depth:** Need-to-know RBAC; purpose-based access tagging; append-only audit store with search, retention rules, legal-hold controls; audit queries for exams and legal | [ ] |
+| **Gap 6 — Explainability contestable:** Panels bound to raw evidence; confidence/uncertainty where available; counterfactual tooling with replayable data | [ ] |
+| **Gap 7 — Customer-impact:** Customer-communication artifacts (templates, disclosures, response-by dates); appeals pipeline with separation of duties; remediation tracking and re-review triggers | [ ] |
+| v4 UI placeholders: Queues page (mock queue/SLA and escalation paths), Exports page (mock recent exports), Export case packet CTA on Case detail | [x] |
+| v4 Case detail: Evidence checklist (mock), QC stub, Customer communication & remediation stub (v4 Gaps 2, 7) | [x] |
+| v4 Rules: Policy lifecycle stub (version, state, last rollout; v4 Gap 1) | [x] |
+| v4 Audit: Purpose-based access and retention/legal-hold note (v4 Gap 5) | [x] |
+| v4 Alert detail: Explainability contestable note + counterfactual CTA to Rules simulation (v4 Gap 6) | [x] |
+| Exports page: handle caseId query param (generate-for-case CTA when arriving from case) | [x] |
+| README: platform description, PRDs v1–v4, run instructions | [x] |
+| v4 QC page: Cases → QC (mock scorecards, defect taxonomy, investigator/vendor performance) | [x] |
+| v4 Appeals: Cases → Appeals list page + Appeals block on Case detail (intake vs adjudication) | [x] |
+| v4 Rule history: /rules/history page with mock version table; Rules "View history" links to it | [x] |
+| v4 Confidence on drivers: optional confidence (low/medium/high) in Root cause on Alert detail | [x] |
+| v4 Queue/SLA: Queue and SLA columns on Alerts list; Queue and SLA in Alert detail header | [x] |
+| v4 Audit Purpose: purpose field on audit entries; Purpose filter and Purpose column on Audit page | [x] |
+| v4 Case detail: QC review block (score + defect + Submit); locked section (QC verdict); Generate case packet modal (purpose + policy); Log appeal modal; conditional Appeals block | [x] |
+
+---
+
+*Last updated: 2025-02-12 — Table rows: audit, patterns, high-risk report, exports, appeals, system health now use clickable row for detail navigation instead of link column.*

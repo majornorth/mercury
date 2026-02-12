@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   MOCK_HIGH_RISK_ACCOUNTS_LAST_30_DAYS,
   type HighRiskAccountRow,
@@ -31,6 +34,7 @@ function statusBadge(status: HighRiskAccountRow["status"]) {
 }
 
 export function ReportHighRiskAccountsLast30Days() {
+  const router = useRouter();
   return (
     <div className="space-y-6">
       <section className="rounded-lg border border-border bg-surface-elevated overflow-hidden">
@@ -64,14 +68,21 @@ export function ReportHighRiskAccountsLast30Days() {
             </thead>
             <tbody>
               {MOCK_HIGH_RISK_ACCOUNTS_LAST_30_DAYS.map((row: HighRiskAccountRow) => (
-                <tr key={row.accountId} className="border-b border-border/50">
+                <tr
+                  key={row.accountId}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => router.push(`/alerts?account=${row.accountId}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(`/alerts?account=${row.accountId}`);
+                    }
+                  }}
+                  className="border-b border-border/50 cursor-pointer hover:bg-surface-overlay/30"
+                >
                   <td className="px-4 py-2">
-                    <Link
-                      href={`/alerts?account=${row.accountId}`}
-                      className="font-medium text-brand hover:underline"
-                    >
-                      {row.accountName}
-                    </Link>
+                    <span className="font-medium text-white">{row.accountName}</span>
                     <span className="ml-1.5 font-mono text-xs text-[#8b9cad]">
                       {row.accountId}
                     </span>

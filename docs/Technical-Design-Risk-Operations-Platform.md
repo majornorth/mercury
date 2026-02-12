@@ -4,7 +4,7 @@
 **Audience:** Engineering, security, and compliance review  
 **Status:** Draft for review  
 **Last updated:** February 2025  
-**Related:** [PRD-Risk-Operations-Platform.md](PRD-Risk-Operations-Platform.md), [PRD-Risk-Operations-Platform-v3.md](PRD-Risk-Operations-Platform-v3.md) (v3 additions)
+**Related:** [PRD-Risk-Operations-Platform.md](PRD-Risk-Operations-Platform.md), [PRD-Risk-Operations-Platform-v3.md](PRD-Risk-Operations-Platform-v3.md) (v3 additions), [PRD-Risk-Operations-Platform-v4.md](PRD-Risk-Operations-Platform-v4.md) (v4 additions)
 
 ---
 
@@ -255,6 +255,57 @@ The following technical notes support [PRD v3](PRD-Risk-Operations-Platform-v3.m
 - **Execution:** Scenario simulation is **read-only**. Recommended approach: run a batch (or replay) over **historical** alerts for a defined window (e.g. last 90 days) with **hypothetical** rule parameters (e.g. new threshold). Compare resulting alert set to actuals to derive projected impact (e.g. alert volume delta, proxy false-positive rate delta, and—if defined—estimated “missed” alerts). No write to rule config or production systems from the simulation path.
 - **Impact metrics:** Implementation depends on availability of historical alert and outcome data. Projected change in alert volume and close-as-no-action rate can be computed from replay; “missed” high-risk events may require a defined heuristic (e.g. transactions that would have been alertable under current rule but not under proposed threshold) and must document assumptions and limitations.
 - **Audit:** Every simulation run is logged: `event_type` (e.g. `simulation_run`), `actor_id`, `timestamp`, `resource_type` (rule or rule group), `resource_id`, `details` (scenario parameters and result digest: e.g. alert volume delta, FP proxy delta). Stored in the same Audit Log Store as other events; retention and access follow existing audit policy. No automatic application of rule changes; applying a change remains a separate, audited workflow (e.g. change request or policy release).
+
+---
+
+## 11. Appendix B: v4 Additions (PRD v4)
+
+The following technical notes support [PRD v4](PRD-Risk-Operations-Platform-v4.md) (Operational Scale & Exam Readiness). They extend the architecture with policy lifecycle, queue/SLA orchestration, export engine, and audit store enhancements. The rest of this Technical Design remains unchanged.
+
+### 11.1 Policy Lifecycle and Rule/Model Governance (Gap 1)
+
+- **Lifecycle state machine:** Implement a state machine for rule/model config: `draft` → `review` → `approved` → `staged` (shadow or limited traffic) → `active` → optional `rollback` to a prior version. Transitions are audited (actor, timestamp, from/to state). Ownership of approval (risk strategy vs. compliance vs. engineering) is TBD with product; the platform stores the transition and optional approver role.
+- **Immutable version artifacts:** Each version of a rule or model config is stored as an immutable artifact (e.g. in an object store or versioned table) with: rule/config payload, model version ID, feature schema version, and optional decision-output sample. Version ID is written into alert and case records at decision time so lineage is stable.
+- **Event-sourced decisioning (or equivalent):** For replay and lineage, store decision inputs and outputs (e.g. alert ID, rule version, feature values, outcome) in an append-only store. Support effective-date and feature-flag mappings so that “which rule version was active at time T?” is answerable. Replay and counterfactual (v3 simulation) can consume this store.
+- **Rollback:** Rollback is a transition from `active` to a prior version reference; it requires approval and is logged. The platform does not mandate where rule config is executed (internal system vs. platform-native); it must record which version is effective per alert/case.
+
+### 11.2 Queue, SLA, and Escalation (Gap 3)
+
+- **Queue model:** Introduce a **queue** abstraction: alerts/cases can be assigned to queues. Queues are defined by dimensions (e.g. product/rail, severity, segment) and optional assignment rules (round-robin, skill-based, manual). Queue definitions and routing rules are configurable; assignment and reassignment are workflow actions and audited.
+- **SLA clocks:** For each queue (or alert type), define SLA targets: e.g. time-to-triage, time-to-first-action, time-to-closure. A **SLA service** (or background job) computes remaining time and breach status; breach events are written to the audit store and can trigger alerts and reporting. SAR-relevant queues may use 30/60-day targets where policy defines them.
+- **Escalation paths:** Escalation is a first-class workflow action with a **path** type (e.g. compliance, partner bank, legal, support). Each path has a **handoff template** (required fields, checklist, package format). The Workflow API validates and logs escalation; optional integration with external systems (e.g. partner bank API) is TBD. Routing rules (e.g. “SAR referral → compliance”) can be configured so that certain case types default to a path.
+
+### 11.3 Export Engine and Evidence Packages (Gap 4)
+
+- **Export bundles:** An **Export Service** (or module) generates **case packets** (evidence packages). Input: case ID (and optional alert/account scope). Output: a structured document or file (e.g. PDF, JSON) containing timeline, rationale, rules/models that fired (with versions), and supporting document references—all **redacted** according to a **redaction policy**.
+- **Redaction policies:** Policies are configurable (e.g. “partner-bank-safe”: minimal PII, no raw transaction detail; “exam”: regulator-appropriate). Field-level entitlements determine which fields can appear in which policy; the export engine applies policy at render time. No ad-hoc bulk PII export; exports are purpose-scoped and logged.
+- **Templating and audit:** Export output is **deterministic** for the same case and policy (same input → same output). Every export is logged: `event_type` (e.g. `export_case_packet`), `actor_id`, `timestamp`, `resource_type`/`resource_id` (case), `details` (policy name, purpose, format). Retention follows audit policy; exports may be stored in a secure, access-controlled store for exam or legal requests.
+
+### 11.4 Audit Store Enhancements (Gap 5)
+
+- **Purpose-based access:** Where policy requires, log a **purpose** with data access events (e.g. “investigation,” “QA,” “exam response”). Purpose can be selected at request time (e.g. dropdown) or inferred from role; stored in `details`. Enforcement of “purpose required for this resource” is policy-driven; the audit store only records what was provided.
+- **Retention and legal hold:** The Audit Log Store supports **retention rules** (e.g. retain for 5+ years per compliance). **Legal-hold** capability: mark a set of records (e.g. by resource, date range, or query) as under hold; held records are not purged and can be queried by authorized users (e.g. compliance, legal). Implementation may be a dedicated store with WORM and hold metadata, or integration with an existing legal-hold system.
+- **Audit queries:** Authorized roles (e.g. compliance, security) can run **read-only queries** against the audit store (e.g. “all access to case X,” “all exports in date range”). Query execution itself is logged (who ran what query, when). Results are access-controlled; no PII in logs unless policy allows and role permits.
+
+### 11.5 Case QC and Evidence Checklist (Gap 2)
+
+- **Evidence checklist:** Extend the case data model with a **checklist** (per alert type): list of required or optional evidence items (e.g. “KYB document,” “transaction list,” “screening result”). Each item has a status (pending, collected, N/A) and optional link to artifact; updates are audited. Checklist definition is configurable by alert type (product/compliance to define templates).
+- **QC module:** Add **QC review** as a workflow: a QC reviewer scores a case (or sample) against a **scorecard** (e.g. dimensions: documentation, logic, policy adherence). **Defect taxonomy** (e.g. defect type, severity) is configurable; defects are stored with the case and linked to QC review. **Calibration** sessions (e.g. inter-rater alignment) can be supported by storing calibration event and outcome; sampling plans and performance views query case and QC data with same RBAC as case list.
+
+### 11.6 Customer-Impact and Explainability Extensions (Gaps 6, 7)
+
+- **Customer-impact (Gap 7):** Case model extends with **customer-communication** records (template used, sent date, response-by date) and **remediation** tracking (requested items, received items, steps completed, re-review trigger). **Appeals** are a case subtype or linked workflow: intake (e.g. support) and adjudication (e.g. risk) are separate roles; status and outcome are audited. Implementation can be new tables or fields on case; no new LLM decision authority.
+- **Explainability (Gap 6):** v3 Pillar 1 and traceability to evidence remain. v4 adds: (1) **confidence/uncertainty** in explainability panels when upstream systems provide it; (2) **counterfactual tooling** reusing v3 simulation and event-sourced decision store—replay with hypothetical params and show which alerts/customers would move; results are analytical only, no auto-apply.
+
+### 11.7 Open Technical Questions (v4)
+
+| Item | Owner | Notes |
+|------|-------|-------|
+| Policy lifecycle ownership and approval workflow | Product + compliance | Who approves draft → active; tooling (platform vs. external policy repo). |
+| Queue and SLA backend (new service vs. extend Workflow API) | Engineering | Depends on scale and existing workflow infrastructure. |
+| Export format and partner-bank acceptance | Product + compliance | PDF vs. structured; partner API handoff TBD. |
+| Legal-hold implementation (platform vs. enterprise system) | Compliance + engineering | Retention and hold policy drive design. |
+| Evidence checklist and QC taxonomy schemas | Product + compliance | Define with ops and QC teams. |
 
 ---
 

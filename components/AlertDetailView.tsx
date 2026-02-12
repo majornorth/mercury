@@ -7,6 +7,7 @@ import { useAlertContext } from "@/lib/AlertContext";
 import { AlertWorkflowActions } from "@/components/AlertWorkflowActions";
 import { createCase, getCaseByAlertId, getMergedCases } from "@/lib/caseStore";
 import { MOCK_ALERTS, getRuleHitDrivers } from "@/lib/mockData";
+import { getAlertQueueSla } from "@/lib/mockQueues";
 import type { Alert, AlertDetail } from "@/lib/mockData";
 
 interface AlertDetailViewProps {
@@ -18,6 +19,7 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
   const router = useRouter();
   const { setCurrentAlert } = useAlertContext();
   const relatedCase = getCaseByAlertId(alert.id);
+  const queueSla = getAlertQueueSla(alert.id);
 
   useEffect(() => {
     setCurrentAlert({ alertId: alert.id, accountName: alert.accountName });
@@ -31,13 +33,24 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
           href="/alerts"
           className="text-sm text-[#8b9cad] hover:text-white mb-2 inline-block"
         >
-          ← Triage
+          ← Alerts triage
         </Link>
         <h1 className="text-xl font-semibold text-white">
           {alert.accountName} <span className="font-mono text-[#8b9cad]">({alert.id})</span>
         </h1>
         <p className="text-sm text-[#8b9cad] mt-1">
           Risk: {alert.riskTier} · Status: {alert.status}
+          {queueSla && (
+            <>
+              {" · "}
+              <span className="text-[#8b9cad]">Queue: {queueSla.queueName}</span>
+              {queueSla.slaHoursLeft != null && (
+                <span className={queueSla.slaStatus === "breach" ? " text-red-400" : queueSla.slaStatus === "at_risk" ? " text-amber-400" : ""}>
+                  {" · SLA: "}{queueSla.slaStatus === "breach" ? "Breach" : `${queueSla.slaHoursLeft}h left`}
+                </span>
+              )}
+            </>
+          )}
         </p>
       </div>
 
@@ -91,6 +104,11 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
                         <span className="text-white">{d.featureName}:</span>
                         <span className="font-mono">{String(d.value)}</span>
                         <span>vs threshold {d.thresholdOrTier}</span>
+                        {d.confidence != null && (
+                          <span className={`text-xs px-1.5 py-0.5 rounded ${d.confidence === "high" ? "bg-emerald-500/20 text-emerald-400" : d.confidence === "medium" ? "bg-amber-500/20 text-amber-400" : "bg-amber-500/10 text-amber-300"}`}>
+                            Confidence: {d.confidence}
+                          </span>
+                        )}
                         <span className="text-xs">
                           {d.evidenceType === "rule" ? (
                             <Link href={`/rules#${ruleId}`} className="text-brand hover:underline">{d.evidenceLabel}</Link>
@@ -109,6 +127,22 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
               </div>
             );
           })}
+          <p className="text-xs text-[#8b9cad] mt-3 pt-3 border-t border-emerald-500/20">
+            v4: Each driver is bound to evidence (transactions, account, rule). Confidence/uncertainty shown in Uncertainty section below.
+          </p>
+        </section>
+
+        <section className="rounded-lg border border-border bg-surface-elevated p-4">
+          <h2 className="text-sm font-medium text-[#8b9cad] mb-2">What if? Counterfactual (v4)</h2>
+          <p className="text-xs text-[#8b9cad] mb-3">
+            If you changed a threshold or parameter, which alerts would move? Run scenario simulation on the Rules page with replayable data.
+          </p>
+          <Link
+            href={alert.ruleNames.length > 0 ? `/rules#${alert.ruleNames[0]}` : "/rules"}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-brand/50 text-brand text-sm font-medium hover:bg-brand/10"
+          >
+            Simulate rule impact → {alert.ruleNames.length > 0 ? alert.ruleNames[0] : "Rules"}
+          </Link>
         </section>
 
         {detail && (

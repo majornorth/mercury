@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Alert, RiskTier } from "@/lib/mockData";
 import { MOCK_ALERTS } from "@/lib/mockData";
+import { getAlertQueueSla } from "@/lib/mockQueues";
 
 const RISK_ORDER: Record<RiskTier, number> = { high: 3, medium: 2, low: 1 };
 
@@ -157,6 +158,8 @@ export function AlertList() {
               sortDir={sortDir}
               onSort={handleSort}
             />
+            <th className="px-4 py-3 font-medium text-[#8b9cad]">Queue</th>
+            <th className="px-4 py-3 font-medium text-[#8b9cad]">SLA</th>
             <SortableTh
               label="Created"
               sortKey="created"
@@ -167,7 +170,9 @@ export function AlertList() {
           </tr>
         </thead>
         <tbody>
-          {sortedAlerts.map((alert) => (
+          {sortedAlerts.map((alert) => {
+            const queueSla = getAlertQueueSla(alert.id);
+            return (
             <tr
               key={alert.id}
               role="button"
@@ -197,11 +202,24 @@ export function AlertList() {
               <td className="px-4 py-3 text-[#8b9cad]">
                 {alert.ruleNames.join(", ")}
               </td>
+              <td className="px-4 py-3 text-[#8b9cad] text-xs">
+                {queueSla ? queueSla.queueName : "—"}
+              </td>
+              <td className="px-4 py-3">
+                {queueSla && queueSla.slaHoursLeft != null ? (
+                  <span className={`text-xs ${queueSla.slaStatus === "breach" ? "text-red-400" : queueSla.slaStatus === "at_risk" ? "text-amber-400" : "text-[#8b9cad]"}`}>
+                    {queueSla.slaStatus === "breach" ? "Breach" : `${queueSla.slaHoursLeft}h`}
+                  </span>
+                ) : (
+                  <span className="text-[#8b9cad] text-xs">—</span>
+                )}
+              </td>
               <td className="px-4 py-3 text-[#8b9cad]">
                 {new Date(alert.createdAt).toLocaleDateString()}
               </td>
             </tr>
-          ))}
+          );
+          })}
         </tbody>
       </table>
     </div>
