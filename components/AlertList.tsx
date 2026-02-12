@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Alert, RiskTier } from "@/lib/mockData";
 import { MOCK_ALERTS } from "@/lib/mockData";
-import { getAlertQueueSla } from "@/lib/mockQueues";
+import { getAlertQueueSla, MOCK_QUEUES } from "@/lib/mockQueues";
+import { loadWorkflowState } from "@/components/AlertWorkflowActions";
 
 const RISK_ORDER: Record<RiskTier, number> = { high: 3, medium: 2, low: 1 };
 
@@ -172,6 +173,11 @@ export function AlertList() {
         <tbody>
           {sortedAlerts.map((alert) => {
             const queueSla = getAlertQueueSla(alert.id);
+            const workflowState = typeof window === "undefined" ? null : loadWorkflowState(alert.id);
+            const displayQueueName =
+              workflowState?.assignedQueueId != null
+                ? MOCK_QUEUES.find((q) => q.id === workflowState.assignedQueueId)?.name ?? queueSla?.queueName
+                : queueSla?.queueName;
             return (
             <tr
               key={alert.id}
@@ -203,7 +209,7 @@ export function AlertList() {
                 {alert.ruleNames.join(", ")}
               </td>
               <td className="px-4 py-3 text-[#8b9cad] text-xs">
-                {queueSla ? queueSla.queueName : "—"}
+                {displayQueueName ?? "—"}
               </td>
               <td className="px-4 py-3">
                 {queueSla && queueSla.slaHoursLeft != null ? (

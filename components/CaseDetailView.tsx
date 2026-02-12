@@ -14,6 +14,15 @@ function outcomeLabel(code: OutcomeCode): string {
 /** Cases that have an appeal in mock data (v4 conditional Appeals block). */
 const CASES_WITH_APPEAL = new Set(["case-001", "case-003"]);
 
+/** v5: Mock attachments per case (name, type, date, uploader). */
+const MOCK_CASE_ATTACHMENTS: Record<string, { name: string; type: string; date: string; uploader: string }[]> = {
+  "case-001": [
+    { name: "KYB_doc.pdf", type: "Document", date: "2025-02-10T09:00:00Z", uploader: "J. Smith" },
+    { name: "Transaction_export.xlsx", type: "Spreadsheet", date: "2025-02-11T14:00:00Z", uploader: "J. Smith" },
+  ],
+  "case-002": [{ name: "Screening_result.pdf", type: "Document", date: "2025-02-09T11:30:00Z", uploader: "A. Jones" }],
+};
+
 interface CaseDetailViewProps {
   caseItem: CaseSummary;
   alert: { id: string; accountName: string; accountId: string } | null;
@@ -28,6 +37,12 @@ export function CaseDetailView({ caseItem, alert, similarCases, patternArchetype
   const [appealLogged, setAppealLogged] = useState(false);
   const [qcSubmitted, setQcSubmitted] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<{ name: string; type: string; date: string; uploader: string }[]>(
+    () => MOCK_CASE_ATTACHMENTS[caseItem.id] ?? []
+  );
+  const [attachmentModalOpen, setAttachmentModalOpen] = useState(false);
+  const [newAttachmentName, setNewAttachmentName] = useState("");
+  const [newAttachmentType, setNewAttachmentType] = useState("Document");
   const hasAppeal = CASES_WITH_APPEAL.has(caseItem.id) || appealLogged;
 
   useEffect(() => {
@@ -254,6 +269,34 @@ export function CaseDetailView({ caseItem, alert, similarCases, patternArchetype
           </section>
 
           <section className="rounded-lg border border-border bg-surface-elevated p-4">
+            <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Attachments (v5)</h2>
+            <p className="text-xs text-[#8b9cad] mb-3">
+              Evidence documents and links. Add/view is audited; exports can include or reference per policy.
+            </p>
+            {attachments.length > 0 ? (
+              <ul className="space-y-2 text-sm mb-3">
+                {attachments.map((a, i) => (
+                  <li key={i} className="flex items-center justify-between gap-2 text-white">
+                    <span className="font-mono text-xs truncate">{a.name}</span>
+                    <span className="text-[#8b9cad] text-xs shrink-0">
+                      {a.type} · {new Date(a.date).toLocaleDateString()} · {a.uploader}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-[#8b9cad] mb-3">No attachments yet.</p>
+            )}
+            <button
+              type="button"
+              onClick={() => setAttachmentModalOpen(true)}
+              className="rounded-md border border-brand/50 px-2 py-1 text-xs text-brand hover:bg-brand/10"
+            >
+              Add attachment
+            </button>
+          </section>
+
+          <section className="rounded-lg border border-border bg-surface-elevated p-4">
             <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Customer communication & remediation (v4)</h2>
             <p className="text-xs text-[#8b9cad] mb-3">
               Templates, response-by dates, remediation tracking, appeals. Internal rationale is retained for exam.
@@ -389,6 +432,64 @@ export function CaseDetailView({ caseItem, alert, similarCases, patternArchetype
               <button
                 type="button"
                 onClick={() => setAppealModalOpen(false)}
+                className="rounded-md border border-border px-3 py-1.5 text-sm text-[#8b9cad] hover:bg-surface-overlay"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {attachmentModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" role="dialog" aria-modal="true" aria-labelledby="attachment-modal-title">
+          <div className="rounded-lg border border-border bg-surface-elevated p-6 max-w-md w-full mx-4 shadow-xl">
+            <h2 id="attachment-modal-title" className="text-sm font-medium text-white mb-4">Add attachment (v5)</h2>
+            <div className="space-y-3 text-sm">
+              <label className="block">
+                <span className="text-[#8b9cad] block mb-1">Name (e.g. file name or link label)</span>
+                <input
+                  type="text"
+                  value={newAttachmentName}
+                  onChange={(e) => setNewAttachmentName(e.target.value)}
+                  placeholder="e.g. KYB_doc.pdf"
+                  className="w-full rounded border border-border bg-surface px-3 py-2 text-white placeholder:text-[#6b7a8c]"
+                />
+              </label>
+              <label className="block">
+                <span className="text-[#8b9cad] block mb-1">Type</span>
+                <select
+                  value={newAttachmentType}
+                  onChange={(e) => setNewAttachmentType(e.target.value)}
+                  className="w-full rounded border border-border bg-surface px-3 py-2 text-white"
+                >
+                  <option>Document</option>
+                  <option>Spreadsheet</option>
+                  <option>Link</option>
+                </select>
+              </label>
+            </div>
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const name = newAttachmentName.trim() || "Untitled";
+                  setAttachments((prev) => [
+                    ...prev,
+                    { name, type: newAttachmentType, date: new Date().toISOString(), uploader: "Current user" },
+                  ]);
+                  setAttachmentModalOpen(false);
+                  setNewAttachmentName("");
+                  setNewAttachmentType("Document");
+                  setToastMessage("Attachment added (mock)");
+                }}
+                className="rounded-md bg-brand px-3 py-1.5 text-sm text-white hover:opacity-90"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAttachmentModalOpen(false); setNewAttachmentName(""); setNewAttachmentType("Document"); }}
                 className="rounded-md border border-border px-3 py-1.5 text-sm text-[#8b9cad] hover:bg-surface-overlay"
               >
                 Cancel

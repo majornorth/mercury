@@ -2,7 +2,7 @@
 
 Status key: `[x]` Done · `[ ]` Not started · `[-]` In progress / partial
 
-Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [PRD v2 (Strategist Control Plane)](docs/PRD-Risk-Operations-Platform-v2.md), [PRD v3 (Signal Explainability, Case Patterns, Simulation)](docs/PRD-Risk-Operations-Platform-v3.md), [PRD v4 (Operational Scale & Exam Readiness)](docs/PRD-Risk-Operations-Platform-v4.md), [Technical Design](docs/Technical-Design-Risk-Operations-Platform.md).
+Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [PRD v2 (Strategist Control Plane)](docs/PRD-Risk-Operations-Platform-v2.md), [PRD v3 (Signal Explainability, Case Patterns, Simulation)](docs/PRD-Risk-Operations-Platform-v3.md), [PRD v4 (Operational Scale & Exam Readiness)](docs/PRD-Risk-Operations-Platform-v4.md), [PRD v5 (Remaining UX & Workflow Closure)](docs/PRD-Risk-Operations-Platform-v5.md), [Technical Design](docs/Technical-Design-Risk-Operations-Platform.md).
 
 ---
 
@@ -191,4 +191,20 @@ See [PRD v4](docs/PRD-Risk-Operations-Platform-v4.md) for governance, QC/BPO cas
 
 ---
 
-*Last updated: 2025-02-12 — Table rows: audit, patterns, high-risk report, exports, appeals, system health now use clickable row for detail navigation instead of link column.*
+## 14. v5 (Remaining UX & Workflow Closure)
+
+See [PRD v5](docs/PRD-Risk-Operations-Platform-v5.md) for remaining gaps from the deep-research report. Work items below are derived from v5.
+
+| Item | Status |
+|------|--------|
+| **v5 Gap 1 — Case attachments:** Attachments list on case (name, type, date, uploader); Add attachment; include in export bundle when applicable; audit add/view | [x] |
+| **v5 Gap 2 — Assign to queue:** Assign to queue / Route to queue from alert (queue selector); auditable; queue and SLA reflect in UI | [x] |
+| **v5 Gap 3 — Escalation path and handoff:** Escalate-to selector (Partner bank, Compliance, Legal, Support); handoff checklist (configurable by path); path and checklist in audit | [x] |
+| **v5 Gap 4 — Legal-hold in audit:** Legal-hold filter in audit view; Under-hold indicator on rows; no deletion of held data (v4 store) | [x] |
+| **v5 Gap 5 — Rule lifecycle states:** Rule history and Rules page show staged, pending approval (and draft, approved, active, rolled_back, archived); transitions auditable | [x] |
+| **v5 Gap 6 — Assistant citation-to-evidence:** Citations in assistant responses; Sources / Cited section in UI when citations exist | [x] |
+| **v5 Gap 7 (optional) — Recall and fraud loss reports:** Recall (proxy) report stub; Fraud loss & chargebacks report stub | [x] |
+
+---
+
+*Last updated: 2025-02-12 — Feedback form uses Formspree (NEXT_PUBLIC_FORMSPREE_FORM_ID); submit sends to Formspree, which emails Jason McCoy.*

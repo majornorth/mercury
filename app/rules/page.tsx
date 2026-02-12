@@ -38,6 +38,7 @@ export default function RulesPage() {
           <span><span className="text-[#8b9cad]">Current version:</span> AML-ONB-2025-Q1</span>
           <span><span className="text-[#8b9cad]">State:</span> Active</span>
           <span><span className="text-[#8b9cad]">Last rollout:</span> 2025-02-01</span>
+          <span className="text-[#8b9cad]">(v5: 1 staged, 1 pending approval in history)</span>
           <Link href="/rules/history" className="text-brand hover:underline">View history</Link>
         </div>
       </div>

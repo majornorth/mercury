@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAlertContext } from "@/lib/AlertContext";
-import { AlertWorkflowActions } from "@/components/AlertWorkflowActions";
+import { AlertWorkflowActions, loadWorkflowState } from "@/components/AlertWorkflowActions";
 import { createCase, getCaseByAlertId, getMergedCases } from "@/lib/caseStore";
 import { MOCK_ALERTS, getRuleHitDrivers } from "@/lib/mockData";
-import { getAlertQueueSla } from "@/lib/mockQueues";
+import { getAlertQueueSla, MOCK_QUEUES } from "@/lib/mockQueues";
 import type { Alert, AlertDetail } from "@/lib/mockData";
 
 interface AlertDetailViewProps {
@@ -20,6 +20,11 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
   const { setCurrentAlert } = useAlertContext();
   const relatedCase = getCaseByAlertId(alert.id);
   const queueSla = getAlertQueueSla(alert.id);
+  const workflowState = typeof window === "undefined" ? null : loadWorkflowState(alert.id);
+  const displayQueueName =
+    workflowState?.assignedQueueId != null
+      ? MOCK_QUEUES.find((q) => q.id === workflowState.assignedQueueId)?.name ?? queueSla?.queueName
+      : queueSla?.queueName;
 
   useEffect(() => {
     setCurrentAlert({ alertId: alert.id, accountName: alert.accountName });
@@ -40,11 +45,11 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
         </h1>
         <p className="text-sm text-[#8b9cad] mt-1">
           Risk: {alert.riskTier} · Status: {alert.status}
-          {queueSla && (
+          {(displayQueueName || queueSla) && (
             <>
               {" · "}
-              <span className="text-[#8b9cad]">Queue: {queueSla.queueName}</span>
-              {queueSla.slaHoursLeft != null && (
+              <span className="text-[#8b9cad]">Queue: {displayQueueName ?? "—"}</span>
+              {queueSla?.slaHoursLeft != null && (
                 <span className={queueSla.slaStatus === "breach" ? " text-red-400" : queueSla.slaStatus === "at_risk" ? " text-amber-400" : ""}>
                   {" · SLA: "}{queueSla.slaStatus === "breach" ? "Breach" : `${queueSla.slaHoursLeft}h left`}
                 </span>

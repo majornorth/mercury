@@ -13,6 +13,7 @@ export type AuditEventType =
 /** v4: purpose-based access (e.g. investigation, QA, exam response). */
 export type AuditPurpose = "investigation" | "qa" | "exam_response" | "other";
 
+/** v5: legal-hold controls — entries under hold are preserved for exams/legal. */
 export interface AuditEntry {
   at: string;
   actorId: string;
@@ -21,6 +22,7 @@ export interface AuditEntry {
   resourceId: string;
   details?: string;
   purpose?: AuditPurpose;
+  underLegalHold?: boolean;
 }
 
 export const MOCK_AUDIT_ENTRIES: AuditEntry[] = [
@@ -33,7 +35,7 @@ export const MOCK_AUDIT_ENTRIES: AuditEntry[] = [
   { at: "2025-02-12T13:35:00Z", actorId: "user-2", eventType: "workflow_action", resourceType: "alert", resourceId: "alt-006", details: "Escalated to partner bank", purpose: "investigation" },
   { at: "2025-02-12T12:30:00Z", actorId: "user-1", eventType: "view_event", resourceType: "view", resourceId: "view-outcomes-by-segment", details: "Viewed custom view" },
   { at: "2025-02-12T12:15:00Z", actorId: "user-2", eventType: "llm_request", resourceType: "alert", resourceId: "alt-005", details: "Top risk signals", purpose: "investigation" },
-  { at: "2025-02-12T12:00:00Z", actorId: "user-2", eventType: "data_access", resourceType: "case", resourceId: "case-2", details: "Viewed case detail", purpose: "exam_response" },
+  { at: "2025-02-12T12:00:00Z", actorId: "user-2", eventType: "data_access", resourceType: "case", resourceId: "case-2", details: "Viewed case detail", purpose: "exam_response", underLegalHold: true },
   { at: "2025-02-12T11:45:00Z", actorId: "user-3", eventType: "workflow_action", resourceType: "alert", resourceId: "alt-003", details: "Closed — False positive", purpose: "qa" },
   { at: "2025-02-12T11:30:00Z", actorId: "user-3", eventType: "data_access", resourceType: "alert", resourceId: "alt-003", details: "Viewed alert detail", purpose: "qa" },
   { at: "2025-02-12T11:20:00Z", actorId: "user-1", eventType: "view_event", resourceType: "view", resourceId: "view-alert-volume-rule", details: "Viewed custom view" },
@@ -41,15 +43,15 @@ export const MOCK_AUDIT_ENTRIES: AuditEntry[] = [
   { at: "2025-02-12T10:14:00Z", actorId: "user-1", eventType: "data_access", resourceType: "alert", resourceId: "alt-001", details: "Viewed alert detail", purpose: "investigation" },
   { at: "2025-02-12T09:45:00Z", actorId: "user-1", eventType: "llm_request", resourceType: "alert", resourceId: "alt-001", details: "Why was this account flagged?", purpose: "investigation" },
   { at: "2025-02-12T09:30:00Z", actorId: "user-2", eventType: "workflow_action", resourceType: "alert", resourceId: "alt-004", details: "Closed — Closed no action", purpose: "investigation" },
-  { at: "2025-02-12T09:00:00Z", actorId: "user-2", eventType: "data_access", resourceType: "case", resourceId: "case-1", details: "Viewed case detail", purpose: "exam_response" },
+  { at: "2025-02-12T09:00:00Z", actorId: "user-2", eventType: "data_access", resourceType: "case", resourceId: "case-1", details: "Viewed case detail", purpose: "exam_response", underLegalHold: true },
   // 2025-02-11
   { at: "2025-02-11T16:30:00Z", actorId: "user-1", eventType: "llm_request", resourceType: "alert", resourceId: "alt-002", details: "Similar cases and resolution", purpose: "investigation" },
   { at: "2025-02-11T16:00:00Z", actorId: "user-2", eventType: "workflow_action", resourceType: "alert", resourceId: "alt-002", details: "Escalated", purpose: "investigation" },
   { at: "2025-02-11T15:45:00Z", actorId: "user-2", eventType: "data_access", resourceType: "account", resourceId: "acc-4412", details: "Viewed account transactions", purpose: "investigation" },
   { at: "2025-02-11T15:00:00Z", actorId: "user-2", eventType: "view_event", resourceType: "view", resourceId: "view-onboarding-refs", details: "Viewed custom view" },
   { at: "2025-02-11T14:20:00Z", actorId: "user-3", eventType: "workflow_action", resourceType: "case", resourceId: "case-1", details: "Case outcome recorded — No SAR", purpose: "investigation" },
-  { at: "2025-02-11T14:00:00Z", actorId: "user-3", eventType: "data_access", resourceType: "case", resourceId: "case-1", details: "Viewed case detail", purpose: "qa" },
-  { at: "2025-02-11T11:00:00Z", actorId: "user-1", eventType: "view_event", resourceType: "view", resourceId: "view-sar-summary", details: "Viewed custom view", purpose: "exam_response" },
+  { at: "2025-02-11T14:00:00Z", actorId: "user-3", eventType: "data_access", resourceType: "case", resourceId: "case-1", details: "Viewed case detail", purpose: "qa", underLegalHold: true },
+  { at: "2025-02-11T11:00:00Z", actorId: "user-1", eventType: "view_event", resourceType: "view", resourceId: "view-sar-summary", details: "Viewed custom view", purpose: "exam_response", underLegalHold: true },
   { at: "2025-02-11T10:30:00Z", actorId: "user-2", eventType: "data_access", resourceType: "alert", resourceId: "alt-002", details: "Viewed alert detail", purpose: "investigation" },
   { at: "2025-02-11T10:15:00Z", actorId: "user-2", eventType: "workflow_action", resourceType: "alert", resourceId: "alt-002", details: "Created case from alert", purpose: "investigation" },
   // 2025-02-10

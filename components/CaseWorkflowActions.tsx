@@ -70,6 +70,9 @@ export function CaseWorkflowActions({ caseId }: CaseWorkflowActionsProps) {
   const [disposition, setDisposition] = useState<OutcomeCode>("closed_no_action");
   const [rationale, setRationale] = useState("");
   const [escalateNote, setEscalateNote] = useState("");
+  const [escalatePath, setEscalatePath] = useState<string>("Partner bank");
+  const [handoffSummary, setHandoffSummary] = useState(false);
+  const [handoffRationale, setHandoffRationale] = useState(false);
   const [requestInfoRecipient, setRequestInfoRecipient] = useState<"customer" | "ops">("customer");
   const [requestInfoNote, setRequestInfoNote] = useState("");
   const [actionMessage, setActionMessage] = useState<string | null>(null);
@@ -117,11 +120,18 @@ export function CaseWorkflowActions({ caseId }: CaseWorkflowActionsProps) {
 
   function handleEscalate() {
     const note = escalateNote.trim();
-    appendActivity("Escalated", note || undefined);
+    const checklist = [
+      handoffSummary && "Case summary attached",
+      handoffRationale && "Rationale documented",
+    ].filter(Boolean).join("; ") || "—";
+    appendActivity("Escalated", [escalatePath, note, `Handoff: ${checklist}`].filter(Boolean).join(" · ") || undefined);
     setEscalated(true);
     setEscalateModalOpen(false);
     setEscalateNote("");
-    setActionMessage(note ? "Escalated. Note recorded for audit." : "Escalated to partner bank.");
+    setEscalatePath("Partner bank");
+    setHandoffSummary(false);
+    setHandoffRationale(false);
+    setActionMessage(`Escalated to ${escalatePath}. Path and checklist recorded for audit.`);
   }
 
   function handleClose() {
@@ -332,18 +342,36 @@ export function CaseWorkflowActions({ caseId }: CaseWorkflowActionsProps) {
       {escalateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" role="dialog" aria-modal="true" aria-labelledby="case-escalate-title">
           <div className="rounded-lg border border-border bg-surface-elevated p-4 w-full max-w-md shadow-xl">
-            <h3 id="case-escalate-title" className="text-sm font-semibold text-white mb-2">Escalate case</h3>
-            <p className="text-xs text-[#8b9cad] mb-3">Escalate to partner bank or internal team. Recorded for audit.</p>
+            <h3 id="case-escalate-title" className="text-sm font-semibold text-white mb-2">Escalate case (v5)</h3>
+            <p className="text-xs text-[#8b9cad] mb-3">Select path and complete handoff checklist. Recorded for audit.</p>
+            <label className="block text-xs font-medium text-[#8b9cad] mb-1">Escalate to</label>
+            <select value={escalatePath} onChange={(e) => setEscalatePath(e.target.value)} className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white mb-3">
+              <option>Partner bank</option>
+              <option>Compliance</option>
+              <option>Legal</option>
+              <option>Customer support</option>
+            </select>
+            <p className="text-xs font-medium text-[#8b9cad] mb-1">Handoff checklist</p>
+            <ul className="space-y-1.5 mb-3">
+              <li className="flex items-center gap-2">
+                <input type="checkbox" id="case-handoff-summary" checked={handoffSummary} onChange={(e) => setHandoffSummary(e.target.checked)} className="rounded border-border bg-surface text-brand" />
+                <label htmlFor="case-handoff-summary" className="text-sm text-white">Case summary attached</label>
+              </li>
+              <li className="flex items-center gap-2">
+                <input type="checkbox" id="case-handoff-rationale" checked={handoffRationale} onChange={(e) => setHandoffRationale(e.target.checked)} className="rounded border-border bg-surface text-brand" />
+                <label htmlFor="case-handoff-rationale" className="text-sm text-white">Rationale documented</label>
+              </li>
+            </ul>
             <label className="block text-xs font-medium text-[#8b9cad] mb-1">Note (optional)</label>
             <textarea
               value={escalateNote}
               onChange={(e) => setEscalateNote(e.target.value)}
               placeholder="Reason or context for escalation…"
-              rows={3}
+              rows={2}
               className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-brand resize-none"
             />
             <div className="flex justify-end gap-2 mt-4">
-              <button type="button" onClick={() => { setEscalateModalOpen(false); setEscalateNote(""); }} className="rounded-lg border border-border px-3 py-1.5 text-sm text-[#8b9cad] hover:text-white">Cancel</button>
+              <button type="button" onClick={() => { setEscalateModalOpen(false); setEscalateNote(""); setEscalatePath("Partner bank"); setHandoffSummary(false); setHandoffRationale(false); }} className="rounded-lg border border-border px-3 py-1.5 text-sm text-[#8b9cad] hover:text-white">Cancel</button>
               <button type="button" onClick={handleEscalate} className="rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40 px-3 py-1.5 text-sm font-medium hover:bg-amber-500/30">Escalate</button>
             </div>
           </div>

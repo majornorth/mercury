@@ -17,6 +17,8 @@ import { ReportOnboardingReferralsByOutcome } from "@/components/reports/ReportO
 import { ReportTimeToTriageSla } from "@/components/reports/ReportTimeToTriageSla";
 import { ReportEscalationsToPartnerBank } from "@/components/reports/ReportEscalationsToPartnerBank";
 import { ReportSarFilingSummary } from "@/components/reports/ReportSarFilingSummary";
+import { ReportRecallProxy } from "@/components/reports/ReportRecallProxy";
+import { ReportFraudLossChargebacks } from "@/components/reports/ReportFraudLossChargebacks";
 import { CustomReportView } from "@/components/reports/CustomReportView";
 
 export default function ReportsPage() {
@@ -239,6 +241,8 @@ export default function ReportsPage() {
               <ReportEscalationsToPartnerBank />
             )}
             {selectedReportId === "sar-filing-summary" && <ReportSarFilingSummary />}
+            {selectedReportId === "recall-proxy" && <ReportRecallProxy />}
+            {selectedReportId === "fraud-loss-chargebacks" && <ReportFraudLossChargebacks />}
             {selectedReport?.type === "custom" && (
               <CustomReportView report={selectedReport} />
             )}

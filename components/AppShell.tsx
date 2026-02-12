@@ -2,6 +2,7 @@
 
 import { Nav } from "@/components/Nav";
 import { AssistantPanel } from "@/components/AssistantPanel";
+import { FeedbackButton } from "@/components/FeedbackButton";
 import { AlertProvider } from "@/lib/AlertContext";
 import { AssistantProvider } from "@/lib/AssistantContext";
 import { ReportProvider } from "@/lib/ReportContext";
@@ -22,6 +23,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <AssistantPanel />
+      <FeedbackButton />
     </>
   );
 }

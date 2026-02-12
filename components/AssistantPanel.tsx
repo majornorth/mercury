@@ -1,9 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useAlertContext } from "@/lib/AlertContext";
 import { useAssistantContext } from "@/lib/AssistantContext";
 import { useReportContext } from "@/lib/ReportContext";
+
+/** v5: citation-to-evidence — sources for assistant answers. */
+export type AssistantCitation = { type: string; id: string; label: string; href: string };
 
 const CREATE_REPORT_INTRO =
   "You can create a custom report for your Reports page. Describe what you want in the box below (e.g. \"alert volume by segment\", \"outcomes by rule\", \"high-risk accounts last 30 days\") and I'll add it to your report list. You can then open it from the Reports page. Views use allowlisted data only and are labeled as strategist-created.";
@@ -66,11 +70,38 @@ function getStubResponse(
   return `In production, the Assistant would use Mercury internal context (schemas, rules, policies) to answer.${hint} Try: "Why was this account flagged?", "What similar cases exist?", or "Summarize this case for partner bank escalation."`;
 }
 
+/** v5: Return mock citations for stub responses that reference alerts, cases, or rules. */
+function getStubCitations(
+  text: string,
+  currentAlert: { alertId: string; accountName: string } | null
+): AssistantCitation[] | undefined {
+  const lower = text.toLowerCase();
+  if (lower.includes("why was this account flagged") && currentAlert) {
+    return [
+      { type: "Alert", id: currentAlert.alertId, label: currentAlert.alertId, href: `/alerts/${currentAlert.alertId}` },
+      { type: "Rule", id: "TM-INTL-WIRE-VELOCITY", label: "TM-INTL-WIRE-VELOCITY", href: "/rules#TM-INTL-WIRE-VELOCITY" },
+      { type: "Rule", id: "TM-LARGE-SINGLE", label: "TM-LARGE-SINGLE", href: "/rules#TM-LARGE-SINGLE" },
+    ];
+  }
+  if ((lower.includes("similar cases") || lower.includes("summarize")) && currentAlert) {
+    return [
+      { type: "Alert", id: currentAlert.alertId, label: currentAlert.alertId, href: `/alerts/${currentAlert.alertId}` },
+      { type: "Case", id: "case-001", label: "case-001", href: "/cases/case-001" },
+    ];
+  }
+  if (lower.includes("conflict with policy") || lower.includes("regulator")) {
+    return [
+      { type: "Rule", id: "TM-INTL-WIRE-VELOCITY", label: "TM-INTL-WIRE-VELOCITY", href: "/rules#TM-INTL-WIRE-VELOCITY" },
+    ];
+  }
+  return undefined;
+}
+
 export function AssistantPanel() {
   const { currentAlert } = useAlertContext();
   const { assistantOpen, setAssistantOpen, assistantIntent, clearAssistantIntent } = useAssistantContext();
   const { addReport } = useReportContext();
-  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
+  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string; citations?: AssistantCitation[] }[]>([
     {
       role: "assistant",
       content:
@@ -135,7 +166,8 @@ export function AssistantPanel() {
 
     setTimeout(() => {
       const response = getStubResponse(userMessage, currentAlert);
-      setMessages((m) => [...m, { role: "assistant", content: response }]);
+      const citations = getStubCitations(userMessage, currentAlert);
+      setMessages((m) => [...m, { role: "assistant", content: response, citations }]);
       setLoading(false);
     }, 600);
   }
@@ -216,6 +248,20 @@ export function AssistantPanel() {
                         j % 2 === 1 ? <strong key={j}>{part}</strong> : part
                       )}
                     </div>
+                    {msg.citations && msg.citations.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-border/50">
+                        <p className="text-[10px] uppercase tracking-wide text-[#8b9cad] mb-1">Sources (v5)</p>
+                        <ul className="space-y-0.5 text-xs">
+                          {msg.citations.map((c, k) => (
+                            <li key={k}>
+                              <Link href={c.href} className="text-brand hover:underline font-mono">
+                                {c.type}: {c.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </>
                 ) : (
                   msg.content

@@ -80,6 +80,7 @@ export default function AuditPage() {
   const [sortKey, setSortKey] = useState<SortKey | null>("time");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [purposeFilter, setPurposeFilter] = useState<"" | AuditPurpose>("");
+  const [legalHoldFilter, setLegalHoldFilter] = useState<"" | "hold" | "no_hold">("");
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -94,6 +95,11 @@ export default function AuditPage() {
     let list = getAllAuditEntries();
     if (purposeFilter) {
       list = list.filter((e) => e.purpose === purposeFilter);
+    }
+    if (legalHoldFilter === "hold") {
+      list = list.filter((e) => e.underLegalHold === true);
+    } else if (legalHoldFilter === "no_hold") {
+      list = list.filter((e) => e.underLegalHold !== true);
     }
     if (!sortKey) return list;
     list.sort((a, b) => {
@@ -122,7 +128,7 @@ export default function AuditPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return list;
-  }, [sortKey, sortDir, purposeFilter]);
+  }, [sortKey, sortDir, purposeFilter, legalHoldFilter]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -137,18 +143,33 @@ export default function AuditPage() {
         <div className="mt-3 rounded-lg border border-border bg-surface-elevated/80 p-3 text-xs text-[#8b9cad]">
           <strong className="text-white">v4 audit depth:</strong> Need-to-know RBAC and purpose-based access (e.g. investigation, QA, exam response) will tag access events. Append-only store with retention rules and legal-hold controls; audit queries for exams and legal requests. Backend TBD.
         </div>
-        <div className="mt-3 flex items-center gap-2">
-          <label htmlFor="audit-purpose" className="text-sm text-[#8b9cad]">Purpose (v4):</label>
-          <select
-            id="audit-purpose"
-            value={purposeFilter}
-            onChange={(e) => setPurposeFilter(e.target.value as "" | AuditPurpose)}
-            className="rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand"
-          >
-            {PURPOSE_OPTIONS.map((o) => (
-              <option key={o.value || "all"} value={o.value}>{o.label}</option>
-            ))}
-          </select>
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <label htmlFor="audit-purpose" className="text-sm text-[#8b9cad]">Purpose (v4):</label>
+            <select
+              id="audit-purpose"
+              value={purposeFilter}
+              onChange={(e) => setPurposeFilter(e.target.value as "" | AuditPurpose)}
+              className="rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand"
+            >
+              {PURPOSE_OPTIONS.map((o) => (
+                <option key={o.value || "all"} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="audit-legal-hold" className="text-sm text-[#8b9cad]">Legal hold (v5):</label>
+            <select
+              id="audit-legal-hold"
+              value={legalHoldFilter}
+              onChange={(e) => setLegalHoldFilter(e.target.value as "" | "hold" | "no_hold")}
+              className="rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand"
+            >
+              <option value="">All</option>
+              <option value="hold">Under hold</option>
+              <option value="no_hold">Not under hold</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -192,6 +213,7 @@ export default function AuditPage() {
                 onSort={handleSort}
               />
               <th className="px-4 py-3 font-medium text-[#8b9cad]">Purpose</th>
+              <th className="px-4 py-3 font-medium text-[#8b9cad]">Legal hold (v5)</th>
             </tr>
           </thead>
           <tbody>
@@ -219,6 +241,13 @@ export default function AuditPage() {
                   <td className="px-4 py-3 font-mono text-xs text-[#8b9cad]">{e.resourceId}</td>
                   <td className="px-4 py-3 text-[#8b9cad]">{e.details ?? "—"}</td>
                   <td className="px-4 py-3 text-[#8b9cad] text-xs">{purposeLabel(e.purpose)}</td>
+                  <td className="px-4 py-3">
+                    {e.underLegalHold ? (
+                      <span className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/40">Under hold</span>
+                    ) : (
+                      <span className="text-[#8b9cad] text-xs">—</span>
+                    )}
+                  </td>
                 </tr>
               );
             })}

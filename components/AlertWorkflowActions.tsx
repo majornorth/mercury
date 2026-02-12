@@ -7,6 +7,7 @@ import { createCase, getCaseByAlertId } from "@/lib/caseStore";
 import { MOCK_ALERT_ACTIVITY } from "@/lib/mockData";
 import type { AlertStatus } from "@/lib/mockData";
 import type { OutcomeCode } from "@/lib/mockData";
+import { MOCK_QUEUES } from "@/lib/mockQueues";
 import { CURRENT_USER_ID, getAssignableUsers, getMockUser } from "@/lib/mockUsers";
 
 const STORAGE_KEY = "mercury-workflow";
@@ -33,6 +34,7 @@ type ActivityEntry = {
 
 type WorkflowState = {
   assignedTo: string | null;
+  assignedQueueId?: string | null;
   status: AlertStatus;
   closedDisposition?: OutcomeCode;
   closedRationale?: string;
@@ -40,7 +42,8 @@ type WorkflowState = {
   activity?: ActivityEntry[];
 };
 
-function loadWorkflowState(alertId: string): WorkflowState | null {
+/** Exported for AlertDetailView/AlertList to show queue from workflow state (v5). */
+export function loadWorkflowState(alertId: string): WorkflowState | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(`${STORAGE_KEY}-${alertId}`);
@@ -85,10 +88,15 @@ export function AlertWorkflowActions({
   const [disposition, setDisposition] = useState<OutcomeCode>("closed_no_action");
   const [rationale, setRationale] = useState("");
   const [escalateNote, setEscalateNote] = useState("");
+  const [escalatePath, setEscalatePath] = useState<string>("Partner bank");
+  const [handoffSummary, setHandoffSummary] = useState(false);
+  const [handoffRationale, setHandoffRationale] = useState(false);
   const [requestInfoRecipient, setRequestInfoRecipient] = useState<"customer" | "ops">("customer");
   const [requestInfoNote, setRequestInfoNote] = useState("");
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignQueueModalOpen, setAssignQueueModalOpen] = useState(false);
+  const [selectedQueueId, setSelectedQueueId] = useState<string>(MOCK_QUEUES[0]?.id ?? "");
 
   useEffect(() => {
     const stored = loadWorkflowState(alertId);
@@ -132,13 +140,29 @@ export function AlertWorkflowActions({
     setAssignModalOpen(false);
   }
 
+  function handleAssignToQueue() {
+    const queue = MOCK_QUEUES.find((q) => q.id === selectedQueueId);
+    const queueName = queue?.name ?? selectedQueueId;
+    setState((s) => ({ ...s, assignedQueueId: selectedQueueId }));
+    appendActivity("Assigned to queue", queueName);
+    setActionMessage(`Routed to queue: ${queueName}. Recorded for audit.`);
+    setAssignQueueModalOpen(false);
+  }
+
   function handleEscalate() {
     const note = escalateNote.trim();
+    const checklist = [
+      handoffSummary && "Case summary attached",
+      handoffRationale && "Rationale documented",
+    ].filter(Boolean).join("; ") || "—";
     setState((s) => ({ ...s, status: "escalated" }));
-    appendActivity("Escalated", note || undefined);
+    appendActivity("Escalated", [escalatePath, note, `Handoff: ${checklist}`].filter(Boolean).join(" · ") || undefined);
     setEscalateModalOpen(false);
     setEscalateNote("");
-    setActionMessage(note ? "Escalated. Note recorded for audit." : "Escalated to partner bank.");
+    setEscalatePath("Partner bank");
+    setHandoffSummary(false);
+    setHandoffRationale(false);
+    setActionMessage(`Escalated to ${escalatePath}. Path and checklist recorded for audit.`);
   }
 
   function handleClose() {
@@ -249,6 +273,13 @@ export function AlertWorkflowActions({
             )}
             <button
               type="button"
+              onClick={() => setAssignQueueModalOpen(true)}
+              className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-white hover:bg-surface-overlay transition-colors"
+            >
+              Assign to queue
+            </button>
+            <button
+              type="button"
               onClick={() => setEscalateModalOpen(true)}
               disabled={isEscalated}
               className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-sm text-amber-400 hover:bg-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -272,11 +303,21 @@ export function AlertWorkflowActions({
           </>
         )}
       </div>
-      {assignedUser && (
+      {(assignedUser || state.assignedQueueId) && (
         <p className="text-xs text-[#8b9cad] mt-2">
-          Assigned to <span className="text-white">{assignedUser.name}</span>
-          <span className="text-[#6b7a8c]"> ({assignedUser.role})</span>
-          {isAssignedToMe && " · Status: in review."}
+          {assignedUser && (
+            <>
+              Assigned to <span className="text-white">{assignedUser.name}</span>
+              <span className="text-[#6b7a8c]"> ({assignedUser.role})</span>
+              {isAssignedToMe && " · Status: in review."}
+            </>
+          )}
+          {state.assignedQueueId && (
+            <>
+              {assignedUser && " · "}
+              Queue: <span className="text-white">{MOCK_QUEUES.find((q) => q.id === state.assignedQueueId)?.name ?? state.assignedQueueId}</span>
+            </>
+          )}
         </p>
       )}
       {state.closedDisposition != null && state.status === "closed" && (
@@ -378,6 +419,53 @@ export function AlertWorkflowActions({
         </div>
       )}
 
+      {/* Assign to queue modal (v5) */}
+      {assignQueueModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="assign-queue-title"
+        >
+          <div className="rounded-lg border border-border bg-surface-elevated p-4 w-full max-w-sm shadow-xl">
+            <h3 id="assign-queue-title" className="text-sm font-semibold text-white mb-2">
+              Assign to queue (v5)
+            </h3>
+            <p className="text-xs text-[#8b9cad] mb-3">
+              Route this alert to a queue. Queue and SLA will reflect in the UI; action is auditable.
+            </p>
+            <label className="block text-xs font-medium text-[#8b9cad] mb-1">Queue</label>
+            <select
+              value={selectedQueueId}
+              onChange={(e) => setSelectedQueueId(e.target.value)}
+              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white mb-4"
+            >
+              {MOCK_QUEUES.map((q) => (
+                <option key={q.id} value={q.id}>
+                  {q.name} ({q.rail})
+                </option>
+              ))}
+            </select>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setAssignQueueModalOpen(false)}
+                className="rounded-lg border border-border px-3 py-1.5 text-sm text-[#8b9cad] hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAssignToQueue}
+                className="rounded-lg bg-brand px-3 py-1.5 text-sm text-white hover:opacity-90"
+              >
+                Assign to queue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Escalate modal */}
       {escalateModalOpen && (
         <div
@@ -388,17 +476,39 @@ export function AlertWorkflowActions({
         >
           <div className="rounded-lg border border-border bg-surface-elevated p-4 w-full max-w-md shadow-xl">
             <h3 id="escalate-title" className="text-sm font-semibold text-white mb-2">
-              Escalate alert
+              Escalate alert (v5)
             </h3>
             <p className="text-xs text-[#8b9cad] mb-3">
-              Escalate to partner bank or internal team. This will be recorded in the audit log.
+              Select path and complete handoff checklist. Recorded in the audit log.
             </p>
+            <label className="block text-xs font-medium text-[#8b9cad] mb-1">Escalate to</label>
+            <select
+              value={escalatePath}
+              onChange={(e) => setEscalatePath(e.target.value)}
+              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white mb-3"
+            >
+              <option>Partner bank</option>
+              <option>Compliance</option>
+              <option>Legal</option>
+              <option>Customer support</option>
+            </select>
+            <p className="text-xs font-medium text-[#8b9cad] mb-1">Handoff checklist</p>
+            <ul className="space-y-1.5 mb-3">
+              <li className="flex items-center gap-2">
+                <input type="checkbox" id="handoff-summary" checked={handoffSummary} onChange={(e) => setHandoffSummary(e.target.checked)} className="rounded border-border bg-surface text-brand" />
+                <label htmlFor="handoff-summary" className="text-sm text-white">Case summary attached</label>
+              </li>
+              <li className="flex items-center gap-2">
+                <input type="checkbox" id="handoff-rationale" checked={handoffRationale} onChange={(e) => setHandoffRationale(e.target.checked)} className="rounded border-border bg-surface text-brand" />
+                <label htmlFor="handoff-rationale" className="text-sm text-white">Rationale documented</label>
+              </li>
+            </ul>
             <label className="block text-xs font-medium text-[#8b9cad] mb-1">Note (optional)</label>
             <textarea
               value={escalateNote}
               onChange={(e) => setEscalateNote(e.target.value)}
               placeholder="Reason or context for escalation…"
-              rows={3}
+              rows={2}
               className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-brand resize-none"
             />
             <div className="flex justify-end gap-2 mt-4">
@@ -407,6 +517,9 @@ export function AlertWorkflowActions({
                 onClick={() => {
                   setEscalateModalOpen(false);
                   setEscalateNote("");
+                  setEscalatePath("Partner bank");
+                  setHandoffSummary(false);
+                  setHandoffRationale(false);
                 }}
                 className="rounded-lg border border-border px-3 py-1.5 text-sm text-[#8b9cad] hover:text-white"
               >

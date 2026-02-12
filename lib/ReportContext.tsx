@@ -28,6 +28,8 @@ const BUILT_IN_REPORTS: Report[] = [
   { id: "time-to-triage-sla", title: "Time to triage (SLA)", type: "builtin" },
   { id: "escalations-to-partner-bank", title: "Escalations to partner bank", type: "builtin" },
   { id: "sar-filing-summary", title: "SAR filing summary", type: "builtin" },
+  { id: "recall-proxy", title: "Recall (proxy) — v5", type: "builtin" },
+  { id: "fraud-loss-chargebacks", title: "Fraud loss & chargebacks — v5", type: "builtin" },
 ];
 
 const CUSTOM_REPORTS_STORAGE_KEY = "mercury-dashboard-custom-reports";
