@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { MOCK_AUDIT_ENTRIES } from "@/lib/mockAudit";
+import { getAllAuditEntries } from "@/lib/mockAudit";
 import type { AuditEventType } from "@/lib/mockAudit";
 
 const EVENT_LABELS: Record<AuditEventType, string> = {
@@ -10,6 +10,7 @@ const EVENT_LABELS: Record<AuditEventType, string> = {
   workflow_action: "Workflow action",
   llm_request: "LLM request",
   view_event: "View event",
+  simulation_run: "Simulation run",
 };
 
 type SortKey = "time" | "actor" | "event" | "resource" | "details";
@@ -68,7 +69,7 @@ export default function AuditPage() {
   };
 
   const entries = useMemo(() => {
-    const list = [...MOCK_AUDIT_ENTRIES];
+    const list = getAllAuditEntries();
     if (!sortKey) return list;
     list.sort((a, b) => {
       let cmp = 0;
@@ -170,7 +171,12 @@ export default function AuditPage() {
                       {e.resourceId}
                     </Link>
                   )}
-                  {e.resourceType !== "alert" && e.resourceType !== "case" && (
+                  {e.resourceType === "rule" && (
+                    <Link href={`/rules#${e.resourceId}`} className="text-brand hover:underline font-mono text-xs">
+                      {e.resourceId}
+                    </Link>
+                  )}
+                  {e.resourceType !== "alert" && e.resourceType !== "case" && e.resourceType !== "rule" && (
                     <span className="font-mono text-xs text-[#8b9cad]">{e.resourceId}</span>
                   )}
                 </td>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MOCK_ALERTS } from "@/lib/mockData";
 import { CaseWorkflowActions } from "@/components/CaseWorkflowActions";
 import type { CaseSummary, OutcomeCode } from "@/lib/mockData";
+import type { BehaviorArchetypeId } from "@/lib/mockData";
 
 function outcomeLabel(code: OutcomeCode): string {
   return code.replace(/_/g, " ");
@@ -13,9 +14,11 @@ interface CaseDetailViewProps {
   caseItem: CaseSummary;
   alert: { id: string; accountName: string; accountId: string } | null;
   similarCases: CaseSummary[];
+  /** v3: behavior archetype for "See pattern" link */
+  patternArchetype?: BehaviorArchetypeId | null;
 }
 
-export function CaseDetailView({ caseItem, alert, similarCases }: CaseDetailViewProps) {
+export function CaseDetailView({ caseItem, alert, similarCases, patternArchetype }: CaseDetailViewProps) {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <div className="mb-6">
@@ -66,6 +69,21 @@ export function CaseDetailView({ caseItem, alert, similarCases }: CaseDetailView
               <li className="text-[#8b9cad]">Data incomplete: missing counterparty enrichment for 1 transaction</li>
             </ul>
           </section>
+
+          {patternArchetype != null && (
+            <section className="rounded-lg border border-border bg-surface-elevated p-4">
+              <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Case pattern (v3)</h2>
+              <p className="text-xs text-[#8b9cad] mb-2">
+                This case belongs to a behavior archetype. View resolution prevalence for this pattern.
+              </p>
+              <Link
+                href={`/cases/patterns?archetype=${patternArchetype}`}
+                className="text-brand hover:underline text-sm"
+              >
+                See pattern →
+              </Link>
+            </section>
+          )}
 
           <section className="rounded-lg border border-border bg-surface-elevated p-4">
             <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Linked alert</h2>

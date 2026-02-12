@@ -4,7 +4,7 @@
 **Audience:** Engineering, security, and compliance review  
 **Status:** Draft for review  
 **Last updated:** February 2025  
-**Related:** [PRD-Risk-Operations-Platform.md](PRD-Risk-Operations-Platform.md)
+**Related:** [PRD-Risk-Operations-Platform.md](PRD-Risk-Operations-Platform.md), [PRD-Risk-Operations-Platform-v3.md](PRD-Risk-Operations-Platform-v3.md) (v3 additions)
 
 ---
 
@@ -230,6 +230,31 @@ Exact APIs and schemas are TBD; the platform assumes **read** from alerts, accou
 | LLM provider and model choice | Engineering + compliance | Cost, latency, data residency, and audit requirements. |
 | Audit log retention and WORM policy | Compliance | Confirm retention period and tamper evidence. |
 | Read model vs. direct reads and caching | Engineering | After load and latency targets are known. |
+
+---
+
+## 10. Appendix A: v3 Additions (PRD v3)
+
+The following technical notes support [PRD v3](PRD-Risk-Operations-Platform-v3.md) (signal explainability, case pattern discovery, scenario simulation). The rest of this Technical Design remains unchanged.
+
+### 10.1 Data for Feature-Level Explainability (Pillar 1)
+
+- **Dependency:** The platform must obtain **feature-level contributions** per rule hit (and, where applicable, per risk score). This typically requires the rule or risk-score system to expose a structured payload, e.g.:
+  - Rule output: rule ID, threshold values used, and a list of (feature name, value, threshold or tier) that contributed to the fire.
+  - Risk-score API: score value plus contribution breakdown (e.g. SHAP-style or rule-based attribution).
+- **Platform role:** Consume that payload from Mercury internal systems; render it in the UI with links to evidence (transactions, account attributes, rule definition). No computation of contributions in the platform; exposure only. If the upstream system does not yet expose breakdowns, Pillar 1 scope may be limited to rule names and thresholds until contracts are extended.
+
+### 10.2 Case Patterns Data Model (Pillar 2)
+
+- **Archetype taxonomy:** Define a set of behavior archetypes (e.g. rule-based labels, segment + outcome combinations, or disposition-derived clusters). Taxonomy is TBD with product and compliance; the platform assumes a **grouping key** per case (e.g. `archetype_id` or composite of rule + segment).
+- **Grouping keys:** Cases are grouped by archetype; aggregation stores (or query-time logic) support: count per archetype, resolution mix (closed no action, escalated, SAR, etc.), and optional trend by time or segment. Same RBAC as case list: user sees only cases they are allowed to see; pattern-level aggregates respect the same visibility.
+- **Navigation:** Pattern view queries by grouping key; drill-down to case list is a filtered case list (same API and audit as existing Cases). “See pattern” from a case resolves the case’s archetype and links to the pattern view.
+
+### 10.3 Simulation Execution and Audit (Pillar 3)
+
+- **Execution:** Scenario simulation is **read-only**. Recommended approach: run a batch (or replay) over **historical** alerts for a defined window (e.g. last 90 days) with **hypothetical** rule parameters (e.g. new threshold). Compare resulting alert set to actuals to derive projected impact (e.g. alert volume delta, proxy false-positive rate delta, and—if defined—estimated “missed” alerts). No write to rule config or production systems from the simulation path.
+- **Impact metrics:** Implementation depends on availability of historical alert and outcome data. Projected change in alert volume and close-as-no-action rate can be computed from replay; “missed” high-risk events may require a defined heuristic (e.g. transactions that would have been alertable under current rule but not under proposed threshold) and must document assumptions and limitations.
+- **Audit:** Every simulation run is logged: `event_type` (e.g. `simulation_run`), `actor_id`, `timestamp`, `resource_type` (rule or rule group), `resource_id`, `details` (scenario parameters and result digest: e.g. alert volume delta, FP proxy delta). Stored in the same Audit Log Store as other events; retention and access follow existing audit policy. No automatic application of rule changes; applying a change remains a separate, audited workflow (e.g. change request or policy release).
 
 ---
 

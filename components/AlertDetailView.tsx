@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useAlertContext } from "@/lib/AlertContext";
 import { AlertWorkflowActions } from "@/components/AlertWorkflowActions";
 import { createCase, getCaseByAlertId, getMergedCases } from "@/lib/caseStore";
-import { MOCK_ALERTS } from "@/lib/mockData";
+import { MOCK_ALERTS, getRuleHitDrivers } from "@/lib/mockData";
 import type { Alert, AlertDetail } from "@/lib/mockData";
 
 interface AlertDetailViewProps {
@@ -70,6 +70,45 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
           <p className="text-xs text-[#8b9cad] mt-2">
             <Link href="/rules" className="text-brand hover:underline">Rules reference</Link> for definitions and thresholds.
           </p>
+        </section>
+
+        <section className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4">
+          <h2 className="text-sm font-medium text-emerald-400 mb-2">Root cause (v3)</h2>
+          <p className="text-xs text-[#8b9cad] mb-3">
+            Why each rule fired: feature-level drivers and links to evidence. Use for partner bank and regulator justification.
+          </p>
+          {alert.ruleNames.map((ruleId) => {
+            const drivers = getRuleHitDrivers(alert.id, ruleId);
+            return (
+              <div key={ruleId} className="mb-4 last:mb-0">
+                <h3 className="text-xs font-mono text-white mb-2">
+                  <Link href={`/rules#${ruleId}`} className="text-brand hover:underline">{ruleId}</Link>
+                </h3>
+                {drivers.length > 0 ? (
+                  <ul className="space-y-1.5 text-sm">
+                    {drivers.map((d, i) => (
+                      <li key={i} className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[#8b9cad]">
+                        <span className="text-white">{d.featureName}:</span>
+                        <span className="font-mono">{String(d.value)}</span>
+                        <span>vs threshold {d.thresholdOrTier}</span>
+                        <span className="text-xs">
+                          {d.evidenceType === "rule" ? (
+                            <Link href={`/rules#${ruleId}`} className="text-brand hover:underline">{d.evidenceLabel}</Link>
+                          ) : d.evidenceType === "transaction" ? (
+                            <Link href={`/alerts/${alert.id}#transactions`} className="text-brand hover:underline">{d.evidenceLabel}</Link>
+                          ) : (
+                            <Link href={`/alerts/${alert.id}#account`} className="text-brand hover:underline">{d.evidenceLabel}</Link>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-[#8b9cad]">Feature drivers not available for this rule on this alert (mock data).</p>
+                )}
+              </div>
+            );
+          })}
         </section>
 
         {detail && (

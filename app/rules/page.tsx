@@ -1,4 +1,5 @@
 import { RULES_REFERENCE } from "@/lib/rulesReference";
+import { RuleSimulation } from "@/components/RuleSimulation";
 
 /** Mock tradeoff impact per rule for v2 "explicit tradeoffs" UI. */
 const MOCK_RULE_IMPACT: Record<string, { fpPctChange?: string; affectedSegment?: string; affectedCustomers?: number }> = {
@@ -61,6 +62,7 @@ export default function RulesPage() {
                       )}
                     </div>
                   )}
+                  <RuleSimulation ruleId={r.id} ruleName={r.name} currentThreshold={r.threshold} />
                 </li>
               );
             })}
@@ -92,6 +94,7 @@ export default function RulesPage() {
                       )}
                     </div>
                   )}
+                  <RuleSimulation ruleId={r.id} ruleName={r.name} currentThreshold={r.threshold} />
                 </li>
               );
             })}

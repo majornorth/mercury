@@ -7,7 +7,8 @@ export type AuditEventType =
   | "data_access"
   | "workflow_action"
   | "llm_request"
-  | "view_event";
+  | "view_event"
+  | "simulation_run";
 
 export interface AuditEntry {
   at: string;
@@ -53,3 +54,35 @@ export const MOCK_AUDIT_ENTRIES: AuditEntry[] = [
   { at: "2025-02-10T15:30:00Z", actorId: "user-1", eventType: "llm_request", resourceType: "alert", resourceId: "alt-001", details: "Explainability: why flagged" },
   { at: "2025-02-10T14:00:00Z", actorId: "user-2", eventType: "workflow_action", resourceType: "alert", resourceId: "alt-004", details: "Assigned to me" },
 ];
+
+const SIMULATION_RUNS_KEY = "mercury-audit-simulation-runs";
+
+/** Append a simulation run to the audit trail (localStorage for prototype). */
+export function appendSimulationRun(entry: Omit<AuditEntry, "eventType"> & { eventType: "simulation_run" }): void {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = localStorage.getItem(SIMULATION_RUNS_KEY);
+    const list: AuditEntry[] = raw ? (JSON.parse(raw) as AuditEntry[]) : [];
+    list.unshift({ ...entry, at: new Date().toISOString() });
+    localStorage.setItem(SIMULATION_RUNS_KEY, JSON.stringify(list.slice(0, 200)));
+  } catch {
+    // ignore
+  }
+}
+
+/** Get simulation run entries from localStorage (for merge with static audit log). */
+export function getSimulationRunEntries(): AuditEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(SIMULATION_RUNS_KEY);
+    return raw ? (JSON.parse(raw) as AuditEntry[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** All audit entries (static + simulation runs). Use in Audit page to show full log. */
+export function getAllAuditEntries(): AuditEntry[] {
+  const simulation = typeof window === "undefined" ? [] : getSimulationRunEntries();
+  return [...simulation, ...MOCK_AUDIT_ENTRIES];
+}

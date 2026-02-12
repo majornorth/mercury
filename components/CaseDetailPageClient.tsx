@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { notFound } from "next/navigation";
 import { getMergedCases } from "@/lib/caseStore";
-import { MOCK_ALERTS } from "@/lib/mockData";
+import { MOCK_ALERTS, getArchetypeByAlertId } from "@/lib/mockData";
 import { CaseDetailView } from "@/components/CaseDetailView";
 import type { CaseSummary } from "@/lib/mockData";
 
@@ -31,11 +31,14 @@ export function CaseDetailPageClient() {
     return sameSegment || sharedRule;
   }) as CaseSummary[];
 
+  const patternArchetype = getArchetypeByAlertId(caseItem.alertId);
+
   return (
     <CaseDetailView
       caseItem={caseItem as CaseSummary}
       alert={currentAlert}
       similarCases={similarCases}
+      patternArchetype={patternArchetype}
     />
   );
 }

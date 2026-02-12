@@ -27,19 +27,22 @@ export function Nav() {
             Risk Ops
           </Link>
           <nav className="flex gap-1">
-            {navItems.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname === href
-                    ? "bg-surface-overlay text-white"
-                    : "text-[#8b9cad] hover:text-white hover:bg-surface-overlay/50"
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
+            {navItems.map(({ href, label }) => {
+              const isActive = pathname === href || (href === "/cases" && pathname.startsWith("/cases"));
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-surface-overlay text-white"
+                      : "text-[#8b9cad] hover:text-white hover:bg-surface-overlay/50"
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
         <div className="flex items-center gap-3">

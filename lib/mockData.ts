@@ -648,3 +648,226 @@ function deriveSystemHealthSummary(): SystemHealthSummary {
 }
 
 export const MOCK_SYSTEM_HEALTH: SystemHealthSummary = deriveSystemHealthSummary();
+
+// --- v3 Pillar 1: Signal explainability — feature-level drivers per rule hit ---
+
+export interface RuleHitDriver {
+  featureName: string;
+  value: string | number;
+  thresholdOrTier: string;
+  evidenceType: "transaction" | "account" | "rule";
+  evidenceLabel: string;
+}
+
+/** alertId -> ruleId -> drivers (why this rule fired on this alert). */
+export const MOCK_RULE_HIT_DRIVERS: Record<string, Record<string, RuleHitDriver[]>> = {
+  "alt-001": {
+    "TM-INTL-WIRE-VELOCITY": [
+      { featureName: "Wire count (7-day)", value: 5, thresholdOrTier: "≥ 3", evidenceType: "transaction", evidenceLabel: "View transactions" },
+      { featureName: "Top counterparty jurisdiction", value: "Tier 2", thresholdOrTier: "Tier 2+ flags", evidenceType: "account", evidenceLabel: "Account attributes" },
+    ],
+    "TM-LARGE-SINGLE": [
+      { featureName: "Largest wire (USD)", value: 62000, thresholdOrTier: "> 50,000", evidenceType: "transaction", evidenceLabel: "View transactions" },
+    ],
+  },
+  "alt-002": {
+    "ONB-BENEFICIAL-OWNER": [
+      { featureName: "Ownership depth", value: 4, thresholdOrTier: "> 3 layers", evidenceType: "account", evidenceLabel: "KYC / beneficial owner" },
+      { featureName: "PEP match score", value: 0.72, thresholdOrTier: "> 0.6 review", evidenceType: "account", evidenceLabel: "Account attributes" },
+    ],
+  },
+  "alt-003": {
+    "TM-STRUCTURING": [
+      { featureName: "Tx count (48h)", value: 8, thresholdOrTier: "≥ 5", evidenceType: "transaction", evidenceLabel: "View transactions" },
+      { featureName: "Amount band (under $10k)", value: 7, thresholdOrTier: "≥ 4", evidenceType: "transaction", evidenceLabel: "View transactions" },
+    ],
+    "TM-CASH-INTENSIVE": [
+      { featureName: "Cash deposit 30d (USD)", value: 145000, thresholdOrTier: "> 100k", evidenceType: "transaction", evidenceLabel: "View transactions" },
+    ],
+    "TM-RAPID-MOVEMENT": [
+      { featureName: "Inbound/outbound (48h)", value: 6, thresholdOrTier: "≥ 5", evidenceType: "transaction", evidenceLabel: "View transactions" },
+    ],
+  },
+  "alt-004": {
+    "TM-INTL-WIRE-VELOCITY": [
+      { featureName: "Wire count (7-day)", value: 4, thresholdOrTier: "≥ 3", evidenceType: "transaction", evidenceLabel: "View transactions" },
+      { featureName: "Same jurisdiction", value: "DE", thresholdOrTier: "Same in 7d", evidenceType: "transaction", evidenceLabel: "View transactions" },
+    ],
+  },
+  "alt-005": {
+    "TM-LARGE-SINGLE": [
+      { featureName: "Largest wire (USD)", value: 78000, thresholdOrTier: "> 50,000", evidenceType: "transaction", evidenceLabel: "View transactions" },
+    ],
+    "TM-INTL-WIRE-VELOCITY": [
+      { featureName: "Wire count (7-day)", value: 3, thresholdOrTier: "≥ 3", evidenceType: "transaction", evidenceLabel: "View transactions" },
+    ],
+  },
+};
+
+export function getRuleHitDrivers(alertId: string, ruleId: string): RuleHitDriver[] {
+  return MOCK_RULE_HIT_DRIVERS[alertId]?.[ruleId] ?? [];
+}
+
+// --- v3 Pillar 2: Case patterns — behavior archetypes and resolution prevalence ---
+
+export type BehaviorArchetypeId =
+  | "high_velocity_intl_wires"
+  | "structuring_like"
+  | "high_risk_jurisdiction"
+  | "large_single"
+  | "beneficial_owner"
+  | "cash_intensive"
+  | "multi_rule_complex";
+
+export interface CasePatternSummary {
+  archetypeId: BehaviorArchetypeId;
+  label: string;
+  caseCount: number;
+  closedNoAction: number;
+  escalated: number;
+  sar: number;
+  approved: number;
+  denied: number;
+  open: number;
+  pctClosedNoAction: number;
+  pctEscalated: number;
+  pctSar: number;
+}
+
+function getArchetypeForCase(c: CaseSummary, alert: Alert | undefined): BehaviorArchetypeId {
+  if (!alert) return "multi_rule_complex";
+  const rules = alert.ruleNames;
+  if (rules.includes("TM-INTL-WIRE-VELOCITY") && !rules.includes("TM-STRUCTURING")) return "high_velocity_intl_wires";
+  if (rules.includes("TM-STRUCTURING")) return "structuring_like";
+  if (rules.includes("TM-HIGH-RISK-JURISDICTION")) return "high_risk_jurisdiction";
+  if (rules.includes("TM-LARGE-SINGLE") && rules.length <= 2) return "large_single";
+  if (rules.includes("ONB-BENEFICIAL-OWNER") && !rules.includes("ONB-SANCTIONS-EDGE")) return "beneficial_owner";
+  if (rules.includes("TM-CASH-INTENSIVE")) return "cash_intensive";
+  return "multi_rule_complex";
+}
+
+const ARCHETYPE_LABELS: Record<BehaviorArchetypeId, string> = {
+  high_velocity_intl_wires: "High velocity intl wires",
+  structuring_like: "Structuring-like",
+  high_risk_jurisdiction: "High-risk jurisdiction exposure",
+  large_single: "Large single transaction",
+  beneficial_owner: "Beneficial owner / onboarding",
+  cash_intensive: "Cash-intensive activity",
+  multi_rule_complex: "Multi-rule / complex",
+};
+
+function deriveCasePatterns(): CasePatternSummary[] {
+  const merged = [...MOCK_CASES];
+  const byArchetype: Record<BehaviorArchetypeId, { caseIds: string[]; outcomes: Record<OutcomeCode | "open", number> }> = {
+    high_velocity_intl_wires: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    structuring_like: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    high_risk_jurisdiction: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    large_single: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    beneficial_owner: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    cash_intensive: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    multi_rule_complex: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+  };
+  for (const c of merged) {
+    const alert = MOCK_ALERTS.find((a) => a.id === c.alertId);
+    const arch = getArchetypeForCase(c, alert);
+    byArchetype[arch].caseIds.push(c.id);
+    const key = c.outcome ?? "open";
+    byArchetype[arch].outcomes[key]++;
+  }
+  return (Object.keys(ARCHETYPE_LABELS) as BehaviorArchetypeId[]).map((archetypeId) => {
+    const { caseIds, outcomes } = byArchetype[archetypeId];
+    const total = caseIds.length;
+    const closedNoAction = outcomes.closed_no_action;
+    const escalated = outcomes.escalated;
+    const sar = outcomes.sar;
+    const approved = outcomes.approved;
+    const denied = outcomes.denied;
+    const open = outcomes.open;
+    const resolved = total - open;
+    return {
+      archetypeId,
+      label: ARCHETYPE_LABELS[archetypeId],
+      caseCount: total,
+      closedNoAction,
+      escalated,
+      sar,
+      approved,
+      denied,
+      open,
+      pctClosedNoAction: resolved > 0 ? Math.round((closedNoAction / resolved) * 100) : 0,
+      pctEscalated: resolved > 0 ? Math.round((escalated / resolved) * 100) : 0,
+      pctSar: resolved > 0 ? Math.round((sar / resolved) * 100) : 0,
+    };
+  }).filter((p) => p.caseCount > 0);
+}
+
+export const MOCK_CASE_PATTERNS: CasePatternSummary[] = deriveCasePatterns();
+
+export function getArchetypeForCaseId(caseId: string): BehaviorArchetypeId | null {
+  const c = MOCK_CASES.find((x) => x.id === caseId);
+  if (!c) return null;
+  const alert = MOCK_ALERTS.find((a) => a.id === c.alertId);
+  return getArchetypeForCase(c, alert);
+}
+
+export function getCaseIdsByArchetype(archetypeId: BehaviorArchetypeId, caseList?: { id: string; alertId: string }[]): string[] {
+  const list = caseList ?? MOCK_CASES;
+  const ids: string[] = [];
+  for (const c of list) {
+    const alert = MOCK_ALERTS.find((a) => a.id === c.alertId);
+    if (getArchetypeForCase(c as CaseSummary, alert) === archetypeId) ids.push(c.id);
+  }
+  return ids;
+}
+
+/** Archetype for any case given its alertId (e.g. for merged case list including runtime-created cases). */
+export function getArchetypeByAlertId(alertId: string): BehaviorArchetypeId {
+  const alert = MOCK_ALERTS.find((a) => a.id === alertId);
+  return getArchetypeForCase({ id: "", alertId, outcome: undefined }, alert);
+}
+
+/** Compute pattern summaries from any case list (e.g. getMergedCases() for runtime-created cases). */
+export function getCasePatternsFromCases(
+  cases: Array<{ id: string; alertId: string; outcome?: OutcomeCode }>
+): CasePatternSummary[] {
+  const byArchetype: Record<BehaviorArchetypeId, { caseIds: string[]; outcomes: Record<OutcomeCode | "open", number> }> = {
+    high_velocity_intl_wires: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    structuring_like: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    high_risk_jurisdiction: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    large_single: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    beneficial_owner: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    cash_intensive: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+    multi_rule_complex: { caseIds: [], outcomes: { approved: 0, denied: 0, escalated: 0, sar: 0, closed_no_action: 0, open: 0 } },
+  };
+  for (const c of cases) {
+    const arch = getArchetypeByAlertId(c.alertId);
+    byArchetype[arch].caseIds.push(c.id);
+    const key = c.outcome ?? "open";
+    byArchetype[arch].outcomes[key]++;
+  }
+  return (Object.keys(ARCHETYPE_LABELS) as BehaviorArchetypeId[]).map((archetypeId) => {
+    const { caseIds, outcomes } = byArchetype[archetypeId];
+    const total = caseIds.length;
+    const closedNoAction = outcomes.closed_no_action;
+    const escalated = outcomes.escalated;
+    const sar = outcomes.sar;
+    const approved = outcomes.approved;
+    const denied = outcomes.denied;
+    const open = outcomes.open;
+    const resolved = total - open;
+    return {
+      archetypeId,
+      label: ARCHETYPE_LABELS[archetypeId],
+      caseCount: total,
+      closedNoAction,
+      escalated,
+      sar,
+      approved,
+      denied,
+      open,
+      pctClosedNoAction: resolved > 0 ? Math.round((closedNoAction / resolved) * 100) : 0,
+      pctEscalated: resolved > 0 ? Math.round((escalated / resolved) * 100) : 0,
+      pctSar: resolved > 0 ? Math.round((sar / resolved) * 100) : 0,
+    };
+  }).filter((p) => p.caseCount > 0);
+}

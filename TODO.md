@@ -2,7 +2,7 @@
 
 Status key: `[x]` Done · `[ ]` Not started · `[-]` In progress / partial
 
-Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [PRD v2 (Strategist Control Plane)](docs/PRD-Risk-Operations-Platform-v2.md), [Technical Design](docs/Technical-Design-Risk-Operations-Platform.md).
+Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [PRD v2 (Strategist Control Plane)](docs/PRD-Risk-Operations-Platform-v2.md), [PRD v3 (Signal Explainability, Case Patterns, Simulation)](docs/PRD-Risk-Operations-Platform-v3.md), [Technical Design](docs/Technical-Design-Risk-Operations-Platform.md).
 
 ---
 
@@ -149,4 +149,16 @@ See [PRD v2](docs/PRD-Risk-Operations-Platform-v2.md) for the strategist control
 
 ---
 
-*Last updated: 2025-02-12 — Expanded mock audit log entries (data access, workflow, LLM, view events).*
+## 12. v3 (PRD v3)
+
+See [PRD v3](docs/PRD-Risk-Operations-Platform-v3.md) for signal explainability, case pattern discovery, and scenario simulation.
+
+| Item | Status |
+|------|--------|
+| Pillar 1: Signal explainability & root cause — drill-down from rule hit to feature drivers, behavioral pattern breakdown, traceability to evidence | [x] |
+| Pillar 2: Case Patterns panel — group cases by behavior archetype, resolution prevalence per pattern, navigation pattern ↔ case list | [x] |
+| Pillar 3: Decision impact forecasting — scenario simulation tied to rules (what-if threshold/param), impact metrics, simulation runs audited | [x] |
+
+---
+
+*Last updated: 2025-02-12 — Case Patterns moved under Cases (List | Patterns sub-nav).*
