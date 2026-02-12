@@ -5,6 +5,9 @@ import { AppShell } from "@/components/AppShell";
 export const metadata: Metadata = {
   title: "Risk Operations | Mercury",
   description: "Internal risk operations platform for strategists",
+  icons: {
+    icon: "/images/favicon.png",
+  },
 };
 
 export default function RootLayout({
