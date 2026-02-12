@@ -1,1 +1,9 @@
+# Dependencies
 node_modules
+
+# Next.js
+.next
+
+# Debug / env
+.env*.local
+npm-debug.log*
