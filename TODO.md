@@ -149,4 +149,4 @@ See [PRD v2](docs/PRD-Risk-Operations-Platform-v2.md) for the strategist control
 
 ---
 
-*Last updated: 2025-02-12 — Added more mock cases for Cases page (20 total).*
+*Last updated: 2025-02-12 — Expanded mock audit log entries (data access, workflow, LLM, view events).*
