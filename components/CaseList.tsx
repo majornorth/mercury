@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getMergedCases } from "@/lib/caseStore";
 import { MOCK_ALERTS } from "@/lib/mockData";
 import type { OutcomeCode } from "@/lib/mockData";
@@ -10,6 +11,7 @@ function outcomeLabel(code: OutcomeCode): string {
 }
 
 export function CaseList() {
+  const router = useRouter();
   const alertsById = Object.fromEntries(MOCK_ALERTS.map((a) => [a.id, a]));
   const cases = getMergedCases();
 
@@ -24,7 +26,6 @@ export function CaseList() {
             <th className="px-4 py-3 font-medium">Outcome</th>
             <th className="px-4 py-3 font-medium">Segment</th>
             <th className="px-4 py-3 font-medium">Closed</th>
-            <th className="px-4 py-3 w-20" />
           </tr>
         </thead>
         <tbody>
@@ -33,10 +34,19 @@ export function CaseList() {
             return (
               <tr
                 key={c.id}
-                className="border-b border-border/50 hover:bg-surface-overlay/30 transition-colors"
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push(`/cases/${c.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(`/cases/${c.id}`);
+                  }
+                }}
+                className="border-b border-border/50 hover:bg-surface-overlay/30 transition-colors cursor-pointer"
               >
                 <td className="px-4 py-3 font-mono text-[#8b9cad]">{c.id}</td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                   <Link
                     href={`/alerts/${c.alertId}`}
                     className="font-mono text-brand hover:underline"
@@ -57,14 +67,6 @@ export function CaseList() {
                 <td className="px-4 py-3 text-[#8b9cad]">{c.segment ?? "—"}</td>
                 <td className="px-4 py-3 text-[#8b9cad]">
                   {c.closedAt != null ? new Date(c.closedAt).toLocaleDateString() : "—"}
-                </td>
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/cases/${c.id}`}
-                    className="text-brand hover:underline text-xs font-medium"
-                  >
-                    Open
-                  </Link>
                 </td>
               </tr>
             );
