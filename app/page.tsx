@@ -1,4 +1,5 @@
 import { AlertList } from "@/components/AlertList";
+import { AlertVolumeByRule } from "@/components/AlertVolumeByRule";
 
 export default function TriagePage() {
   return (
@@ -9,6 +10,7 @@ export default function TriagePage() {
           Review and prioritize alerts. Open an alert for explainability and actions.
         </p>
       </div>
+      <AlertVolumeByRule />
       <AlertList />
     </div>
   );

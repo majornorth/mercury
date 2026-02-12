@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useAlertContext } from "@/lib/AlertContext";
 
 const STUB_RESPONSES: Record<string, string> = {
   "why was this account flagged":
@@ -11,12 +12,23 @@ const STUB_RESPONSES: Record<string, string> = {
     "[AI-generated draft] Account Acme Logistics LLC (acc-101) was referred for review following transaction monitoring alerts (TM-INTL-WIRE-VELOCITY, TM-LARGE-SINGLE). Risk score 0.87. Key signals: international wire velocity, single large wire, high volume in first 30 days. Pending strategist review and disposition. — *Edit and sign off before sending.*",
 };
 
-function getStubResponse(text: string): string {
+function getStubResponse(
+  text: string,
+  currentAlert: { alertId: string; accountName: string } | null
+): string {
   const lower = text.toLowerCase();
   for (const [key, value] of Object.entries(STUB_RESPONSES)) {
-    if (lower.includes(key)) return value;
+    if (lower.includes(key)) {
+      if (key === "summarize this case" && currentAlert) {
+        return `[AI-generated draft] Account **${currentAlert.accountName}** (alert ${currentAlert.alertId}) was referred for review following transaction monitoring alerts. Key signals: international wire velocity, single large wire, high volume in first 30 days. Pending strategist review and disposition. — *Edit and sign off before sending.*`;
+      }
+      return value;
+    }
   }
-  return "In production, the Assistant would use Mercury internal context (schemas, rules, policies) to answer. Try: \"Why was this account flagged?\", \"What similar cases exist?\", or \"Summarize this case for partner bank escalation.\"";
+  const hint = currentAlert
+    ? ` I'm scoped to alert **${currentAlert.alertId}** (${currentAlert.accountName}).`
+    : "";
+  return `In production, the Assistant would use Mercury internal context (schemas, rules, policies) to answer.${hint} Try: "Why was this account flagged?", "What similar cases exist?", or "Summarize this case for partner bank escalation."`;
 }
 
 interface AssistantPanelProps {
@@ -25,6 +37,7 @@ interface AssistantPanelProps {
 }
 
 export function AssistantPanel({ open, onClose }: AssistantPanelProps) {
+  const { currentAlert } = useAlertContext();
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
     {
       role: "assistant",
@@ -48,7 +61,7 @@ export function AssistantPanel({ open, onClose }: AssistantPanelProps) {
     setMessages((m) => [...m, { role: "user", content: userMessage }]);
     setLoading(true);
     setTimeout(() => {
-      const response = getStubResponse(userMessage);
+      const response = getStubResponse(userMessage, currentAlert);
       setMessages((m) => [...m, { role: "assistant", content: response }]);
       setLoading(false);
     }, 600);
@@ -77,9 +90,16 @@ export function AssistantPanel({ open, onClose }: AssistantPanelProps) {
           </button>
         </div>
 
-        <p className="px-4 pb-3 text-xs text-[#8b9cad] border-b border-border shrink-0">
-          Answers are for support only; final decisions are yours.
-        </p>
+        <div className="px-4 pb-3 border-b border-border shrink-0 space-y-1">
+          {currentAlert && (
+            <p className="text-xs text-[#6ea8fe]">
+              Viewing alert <span className="font-mono">{currentAlert.alertId}</span> ({currentAlert.accountName})
+            </p>
+          )}
+          <p className="text-xs text-[#8b9cad]">
+            Answers are for support only; final decisions are yours.
+          </p>
+        </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
           {messages.map((msg, i) => (
@@ -95,11 +115,16 @@ export function AssistantPanel({ open, onClose }: AssistantPanelProps) {
                 }`}
               >
                 {msg.role === "assistant" ? (
-                  <div className="whitespace-pre-wrap [&>strong]:font-semibold">
-                    {msg.content.split("**").map((part, j) =>
-                      j % 2 === 1 ? <strong key={j}>{part}</strong> : part
-                    )}
-                  </div>
+                  <>
+                    <p className="text-[10px] uppercase tracking-wide text-[#8b9cad] mb-1.5" aria-label="AI-generated">
+                      AI-generated
+                    </p>
+                    <div className="whitespace-pre-wrap [&>strong]:font-semibold">
+                      {msg.content.split("**").map((part, j) =>
+                        j % 2 === 1 ? <strong key={j}>{part}</strong> : part
+                      )}
+                    </div>
+                  </>
                 ) : (
                   msg.content
                 )}

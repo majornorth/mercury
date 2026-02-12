@@ -1,0 +1,72 @@
+"use client";
+
+import Link from "next/link";
+import { MOCK_ALERTS, MOCK_CASES } from "@/lib/mockData";
+import type { CaseSummary, OutcomeCode } from "@/lib/mockData";
+
+function outcomeLabel(code: OutcomeCode): string {
+  return code.replace(/_/g, " ");
+}
+
+export function CaseList() {
+  const alertsById = Object.fromEntries(MOCK_ALERTS.map((a) => [a.id, a]));
+
+  return (
+    <div className="rounded-lg border border-border bg-surface-elevated overflow-hidden">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-border bg-surface-overlay/50">
+            <th className="px-4 py-3 font-medium">Case</th>
+            <th className="px-4 py-3 font-medium">Alert</th>
+            <th className="px-4 py-3 font-medium">Account</th>
+            <th className="px-4 py-3 font-medium">Outcome</th>
+            <th className="px-4 py-3 font-medium">Segment</th>
+            <th className="px-4 py-3 font-medium">Closed</th>
+            <th className="px-4 py-3 w-20" />
+          </tr>
+        </thead>
+        <tbody>
+          {MOCK_CASES.map((c) => {
+            const alert = alertsById[c.alertId];
+            return (
+              <tr
+                key={c.id}
+                className="border-b border-border/50 hover:bg-surface-overlay/30 transition-colors"
+              >
+                <td className="px-4 py-3 font-mono text-[#8b9cad]">{c.id}</td>
+                <td className="px-4 py-3">
+                  <Link
+                    href={`/alerts/${c.alertId}`}
+                    className="font-mono text-[#6ea8fe] hover:underline"
+                  >
+                    {c.alertId}
+                  </Link>
+                </td>
+                <td className="px-4 py-3">
+                  {alert ? (
+                    <span className="text-[#8b9cad]">{alert.accountName}</span>
+                  ) : (
+                    <span className="text-[#8b9cad]">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 capitalize">{outcomeLabel(c.outcome)}</td>
+                <td className="px-4 py-3 text-[#8b9cad]">{c.segment ?? "—"}</td>
+                <td className="px-4 py-3 text-[#8b9cad]">
+                  {new Date(c.closedAt).toLocaleDateString()}
+                </td>
+                <td className="px-4 py-3">
+                  <Link
+                    href={`/cases/${c.id}`}
+                    className="text-[#6ea8fe] hover:underline text-xs font-medium"
+                  >
+                    Open
+                  </Link>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}

@@ -1,0 +1,28 @@
+---
+description: Check and update project TODO list before and after making changes
+alwaysApply: true
+---
+
+# Todo List Status
+
+This project has a single source of truth for implementation status: **TODO.md** at the repo root. It is aligned with the [PRD](docs/PRD-Risk-Operations-Platform.md) and [Technical Design](docs/Technical-Design-Risk-Operations-Platform.md).
+
+## Required behavior
+
+1. **Before making changes**
+   - Read **TODO.md** to see what is done and what is left.
+   - Use it to avoid duplicating work and to pick the right next items.
+
+2. **After making changes**
+   - Update **TODO.md** to reflect what you did:
+     - Mark completed items with `[x]`.
+     - Mark in-progress or partial work with `[-]` where appropriate.
+     - Add new rows if you added scope not already listed.
+   - Update the *Last updated* line at the bottom of **TODO.md** (e.g. with the current date or a short note that the agent last updated it).
+
+## Conventions in TODO.md
+
+- `[x]` = Done
+- `[ ]` = Not started
+- `[-]` = In progress or partially done
+- Keep section and table structure; only change status cells and the last-updated line unless you are adding new work items.

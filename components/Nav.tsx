@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/", label: "Triage" },
+  { href: "/cases", label: "Cases" },
   { href: "/views", label: "Custom views" },
+  { href: "/audit", label: "Audit" },
 ];
 
 interface NavProps {

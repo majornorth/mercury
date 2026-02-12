@@ -29,6 +29,7 @@ export interface CaseSummary {
   outcome: OutcomeCode;
   closedAt: string;
   segment?: string;
+  rationale?: string;
 }
 
 export const MOCK_ALERTS: Alert[] = [
@@ -87,7 +88,57 @@ export const MOCK_ALERT_DETAILS: Record<string, AlertDetail> = {
   },
 };
 
+/** Mock activity for alert detail when no workflow actions have been taken yet. */
+export interface MockActivityEntry {
+  at: string;
+  action: string;
+  detail?: string;
+}
+
+export const MOCK_ALERT_ACTIVITY: Record<string, MockActivityEntry[]> = {
+  "alt-001": [
+    { at: "2025-02-12T08:15:00Z", action: "Assigned to me" },
+    { at: "2025-02-12T08:45:00Z", action: "Request info", detail: "To customer — Source of funds and business purpose for recent wires" },
+    { at: "2025-02-12T09:30:00Z", action: "Escalated", detail: "Pending customer response; holding for 48h then re-review." },
+  ],
+  "alt-002": [
+    { at: "2025-02-11T15:00:00Z", action: "Assigned to me" },
+    { at: "2025-02-11T16:30:00Z", action: "Request info", detail: "To ops — Beneficial owner verification status" },
+    { at: "2025-02-10T12:00:00Z", action: "Escalated", detail: "Beneficial owner structure unclear; escalated to partner bank for review." },
+  ],
+  "alt-003": [
+    { at: "2025-02-12T06:30:00Z", action: "Assigned to me" },
+  ],
+  "alt-004": [
+    { at: "2025-02-10T11:30:00Z", action: "Assigned to me" },
+    { at: "2025-02-11T14:00:00Z", action: "Request info", detail: "To customer — Documentation for supplier payment pattern" },
+    { at: "2025-02-11T16:00:00Z", action: "Closed", detail: "Closed no action — Wire pattern explained by legitimate supplier payments; no further action." },
+  ],
+};
+
 export const MOCK_CASES: CaseSummary[] = [
-  { id: "case-1", alertId: "alt-004", outcome: "closed_no_action", closedAt: "2025-02-11T16:00:00Z", segment: "ecommerce" },
-  { id: "case-2", alertId: "alt-002", outcome: "escalated", closedAt: "2025-02-10T12:00:00Z", segment: "saas" },
+  {
+    id: "case-1",
+    alertId: "alt-004",
+    outcome: "closed_no_action",
+    closedAt: "2025-02-11T16:00:00Z",
+    segment: "ecommerce",
+    rationale: "Wire pattern explained by legitimate supplier payments; no further action.",
+  },
+  {
+    id: "case-2",
+    alertId: "alt-002",
+    outcome: "escalated",
+    closedAt: "2025-02-10T12:00:00Z",
+    segment: "saas",
+    rationale: "Beneficial owner structure unclear; escalated to partner bank for review.",
+  },
+  {
+    id: "case-3",
+    alertId: "alt-001",
+    outcome: "closed_no_action",
+    closedAt: "2025-02-12T10:00:00Z",
+    segment: "ecommerce",
+    rationale: "Aligned with case-1 (same segment, TM-INTL-WIRE-VELOCITY); closed no action.",
+  },
 ];

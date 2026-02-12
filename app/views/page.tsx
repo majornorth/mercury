@@ -13,6 +13,8 @@ type ViewFilter = {
 export default function CustomViewsPage() {
   const [filter, setFilter] = useState<ViewFilter>({});
   const [viewName] = useState("Onboarding referrals by segment and outcome (prototype)");
+  const [createViewPrompt, setCreateViewPrompt] = useState("");
+  const [createViewMessage, setCreateViewMessage] = useState<string | null>(null);
 
   const filteredAlerts = useMemo(() => {
     return MOCK_ALERTS.filter((a) => {
@@ -37,6 +39,38 @@ export default function CustomViewsPage() {
         <p className="text-sm text-[#8b9cad] mt-1">
           Read-only views over alerts and outcomes. In production, views are created via natural language and the Assistant.
         </p>
+      </div>
+
+      <div className="rounded-lg border border-border bg-surface-elevated p-4 mb-4">
+        <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Create new view</h2>
+        <p className="text-xs text-[#8b9cad] mb-2">
+          In production, describe the view in natural language; the Assistant and View Engine will generate a read-only view (allowlisted data only).
+        </p>
+        <div className="flex gap-2 flex-wrap">
+          <input
+            type="text"
+            value={createViewPrompt}
+            onChange={(e) => setCreateViewPrompt(e.target.value)}
+            placeholder="e.g. High-risk onboarding referrals by segment and outcome"
+            className="flex-1 min-w-[200px] rounded border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-[#6ea8fe]"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              if (createViewPrompt.trim()) {
+                setCreateViewMessage("In production, the Assistant would generate this view from your description.");
+              }
+            }}
+            className="rounded-lg bg-[#6ea8fe] px-4 py-2 text-sm font-medium text-white hover:bg-[#5b9cfb] shrink-0"
+          >
+            Create view
+          </button>
+        </div>
+        {createViewMessage && (
+          <p className="text-xs text-[#6ea8fe] mt-2 rounded bg-[#6ea8fe]/10 px-2 py-1.5 border border-[#6ea8fe]/30">
+            {createViewMessage}
+          </p>
+        )}
       </div>
 
       <div className="rounded-lg border border-border bg-surface-elevated p-4 mb-4">
