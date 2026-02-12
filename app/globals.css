@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0f1419;
+  --bg-elevated: #1a2129;
+  --border: #2d3843;
+  --text: #e6edf3;
+  --text-muted: #8b9cad;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Internal tool aesthetic: clear hierarchy, low visual noise */
+.risk-badge-high { @apply bg-risk-high/20 text-risk-high border border-risk-high/40; }
+.risk-badge-medium { @apply bg-risk-medium/20 text-risk-medium border border-risk-medium/40; }
+.risk-badge-low { @apply bg-risk-low/20 text-risk-low border border-risk-low/40; }

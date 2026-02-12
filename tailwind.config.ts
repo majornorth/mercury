@@ -1,0 +1,33 @@
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["system-ui", "ui-sans-serif", "sans-serif"],
+        mono: ["ui-monospace", "monospace"],
+      },
+      colors: {
+        surface: {
+          DEFAULT: "#0f1419",
+          elevated: "#1a2129",
+          overlay: "#252d38",
+        },
+        border: "#2d3843",
+        risk: {
+          high: "#e5484d",
+          medium: "#f5c542",
+          low: "#46a758",
+        },
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;

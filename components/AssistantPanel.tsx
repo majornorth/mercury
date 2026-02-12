@@ -1,0 +1,141 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+
+const STUB_RESPONSES: Record<string, string> = {
+  "why was this account flagged":
+    "This account was flagged due to rule hits on **TM-INTL-WIRE-VELOCITY** (3 international wires to the same jurisdiction in 7 days) and **TM-LARGE-SINGLE** (single wire > $50k). Top signal contributions: International wire velocity (35%), Single transaction size (28%), New account activity (24%). You can see the full breakdown on the alert detail page.",
+  "what similar cases exist":
+    "Similar cases in the last 90 days: 2 ecommerce accounts with TM-INTL-WIRE-VELOCITY — one closed no action, one escalated to partner bank. 1 saas account with ONB-BENEFICIAL-OWNER — escalated. Outcomes are available in Custom views (filter by rule and outcome).",
+  "summarize this case":
+    "[AI-generated draft] Account Acme Logistics LLC (acc-101) was referred for review following transaction monitoring alerts (TM-INTL-WIRE-VELOCITY, TM-LARGE-SINGLE). Risk score 0.87. Key signals: international wire velocity, single large wire, high volume in first 30 days. Pending strategist review and disposition. — *Edit and sign off before sending.*",
+};
+
+function getStubResponse(text: string): string {
+  const lower = text.toLowerCase();
+  for (const [key, value] of Object.entries(STUB_RESPONSES)) {
+    if (lower.includes(key)) return value;
+  }
+  return "In production, the Assistant would use Mercury internal context (schemas, rules, policies) to answer. Try: \"Why was this account flagged?\", \"What similar cases exist?\", or \"Summarize this case for partner bank escalation.\"";
+}
+
+interface AssistantPanelProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export function AssistantPanel({ open, onClose }: AssistantPanelProps) {
+  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
+    {
+      role: "assistant",
+      content:
+        "I can help you understand why accounts were flagged, which signals drove risk scores, and how similar cases were resolved. Ask in plain language.",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!input.trim() || loading) return;
+    const userMessage = input.trim();
+    setInput("");
+    setMessages((m) => [...m, { role: "user", content: userMessage }]);
+    setLoading(true);
+    setTimeout(() => {
+      const response = getStubResponse(userMessage);
+      setMessages((m) => [...m, { role: "assistant", content: response }]);
+      setLoading(false);
+    }, 600);
+  }
+
+  return (
+    <aside
+      className={`shrink-0 flex flex-col min-h-0 border-l border-border bg-surface-elevated transition-[width] duration-200 ease-out overflow-hidden ${
+        open ? "w-[28rem]" : "w-0"
+      }`}
+      aria-label="Assistant"
+      aria-hidden={!open}
+    >
+      <div className="flex flex-col h-full min-w-[28rem]">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+          <h2 className="text-sm font-semibold text-white">Assistant</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 rounded-md text-[#8b9cad] hover:text-white hover:bg-surface-overlay transition-colors"
+            aria-label="Close Assistant"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <p className="px-4 pb-3 text-xs text-[#8b9cad] border-b border-border shrink-0">
+          Answers are for support only; final decisions are yours.
+        </p>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                  msg.role === "user"
+                    ? "bg-[#6ea8fe]/20 text-white"
+                    : "bg-surface-overlay text-[#e6edf3]"
+                }`}
+              >
+                {msg.role === "assistant" ? (
+                  <div className="whitespace-pre-wrap [&>strong]:font-semibold">
+                    {msg.content.split("**").map((part, j) =>
+                      j % 2 === 1 ? <strong key={j}>{part}</strong> : part
+                    )}
+                  </div>
+                ) : (
+                  msg.content
+                )}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex justify-start">
+              <div className="bg-surface-overlay rounded-lg px-3 py-2 text-sm text-[#8b9cad]">
+                Thinking…
+              </div>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4 border-t border-border shrink-0">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about alerts, risk scores, or similar cases…"
+              className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-white placeholder-[#6b7a8c] focus:outline-none focus:ring-1 focus:ring-[#6ea8fe]"
+              disabled={loading}
+            />
+            <button
+              type="submit"
+              disabled={loading || !input.trim()}
+              className="rounded-lg bg-[#6ea8fe] px-4 py-2 text-sm font-medium text-white hover:bg-[#5b9cfb] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            >
+              Send
+            </button>
+          </div>
+        </form>
+      </div>
+    </aside>
+  );
+}
