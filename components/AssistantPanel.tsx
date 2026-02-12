@@ -17,6 +17,16 @@ const STUB_RESPONSES: Record<string, string> = {
     "[AI-generated draft] Account Acme Logistics LLC (acc-101) was referred for review following transaction monitoring alerts (TM-INTL-WIRE-VELOCITY, TM-LARGE-SINGLE). Risk score 0.87. Key signals: international wire velocity, single large wire, high volume in first 30 days. Pending strategist review and disposition. — *Edit and sign off before sending.*",
 };
 
+/** Match "create a/new report for X" and return the report description X, or null. */
+function extractCreateReportRequest(text: string): string | null {
+  const lower = text.toLowerCase().trim();
+  const match = lower.match(
+    /(?:create|add)\s+(?:a\s+)?(?:new\s+)?report\s+for\s+(.+)/i
+  );
+  if (!match) return null;
+  return match[1].trim() || null;
+}
+
 function getStubResponse(
   text: string,
   currentAlert: { alertId: string; accountName: string } | null
@@ -86,6 +96,22 @@ export function AssistantPanel() {
         {
           role: "assistant",
           content: `I've added **"${title}"** to your Reports list. Open it from the report list on the right. In production, the View Engine would generate the read-only view from your description.`,
+        },
+      ]);
+      setLoading(false);
+      return;
+    }
+
+    const createReportDesc = extractCreateReportRequest(userMessage);
+    if (createReportDesc) {
+      const title =
+        createReportDesc.length > 60 ? `${createReportDesc.slice(0, 57)}…` : createReportDesc;
+      addReport(title, userMessage);
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: `I've added **"${title}"** to your Reports list. Open it from the report list on the right.`,
         },
       ]);
       setLoading(false);

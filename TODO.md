@@ -89,6 +89,7 @@ Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [Technical Design](docs/
 | Dashboard: right sidebar report list with Create report and search | [x] |
 | Add report button on Dashboard opens Assistant with add-report context (NL request for custom report) | [x] |
 | Additional strategist reports (alert volume by rule, risk tier/status, case resolution, onboarding referrals, SLA, escalations, SAR summary) with mock data and views | [x] |
+| “High-risk accounts last 30 days” report: mock data + UI; add via Assistant prompt (“create a new report for high-risk accounts last 30 days”) | [x] |
 | Natural language → view spec (LLM + allowlisted schema) | [ ] |
 | View Engine: spec execution, allowlist, RBAC at execution time | [ ] |
 | Save/view/template: versioning, diff, rollback | [ ] |
@@ -133,4 +134,4 @@ Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [Technical Design](docs/
 
 ---
 
-*Last updated: 2025-02-12 — Dashboard with right sidebar, Create report, and 8 strategist reports (rule perf/outcomes, alert volume by rule, by risk tier/status, case resolution over time, onboarding referrals, time to triage SLA, escalations, SAR summary).*
+*Last updated: 2025-02-12 — High-risk accounts last 30 days: mock data, ReportHighRiskAccountsLast30Days UI, CustomReportView detection; Assistant “create report for …” adds report and shows table when prompt matches.*

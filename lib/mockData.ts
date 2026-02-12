@@ -394,3 +394,77 @@ export const MOCK_SAR_SUMMARY_BY_RULE: SarSummaryByRuleRow[] = [
   { ruleName: "TM-STRUCTURING", sarCount: 1 },
   { ruleName: "TM-CASH-INTENSIVE", sarCount: 1 },
 ];
+
+// --- High-risk accounts last 30 days (for Assistant-created report) ---
+
+export interface HighRiskAccountRow {
+  accountId: string;
+  accountName: string;
+  segment: string;
+  riskTier: RiskTier;
+  alertCount: number;
+  openAlerts: number;
+  lastAlertAt: string;
+  topRules: string[];
+  status: "new" | "in_review" | "escalated" | "closed";
+}
+
+function deriveHighRiskAccountsLast30Days(): HighRiskAccountRow[] {
+  const thirtyDaysAgo = "2025-01-13";
+  const highRisk = MOCK_ALERTS.filter(
+    (a) => a.riskTier === "high" && a.createdAt >= thirtyDaysAgo
+  );
+  const byAccount: Record<
+    string,
+    {
+      accountId: string;
+      accountName: string;
+      segment: string;
+      alerts: typeof MOCK_ALERTS;
+    }
+  > = {};
+  for (const a of highRisk) {
+    if (!byAccount[a.accountId]) {
+      byAccount[a.accountId] = {
+        accountId: a.accountId,
+        accountName: a.accountName,
+        segment: a.segment ?? "unknown",
+        alerts: [],
+      };
+    }
+    byAccount[a.accountId].alerts.push(a);
+  }
+  return Object.values(byAccount).map(({ accountId, accountName, segment, alerts }) => {
+    const sorted = [...alerts].sort(
+      (x, y) => new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime()
+    );
+    const last = sorted[0];
+    const openAlerts = alerts.filter(
+      (a) => a.status === "new" || a.status === "in_review" || a.status === "escalated"
+    ).length;
+    const ruleCount: Record<string, number> = {};
+    for (const a of alerts) {
+      for (const r of a.ruleNames) {
+        ruleCount[r] = (ruleCount[r] ?? 0) + 1;
+      }
+    }
+    const topRules = Object.entries(ruleCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([rule]) => rule);
+    return {
+      accountId,
+      accountName,
+      segment,
+      riskTier: "high" as const,
+      alertCount: alerts.length,
+      openAlerts,
+      lastAlertAt: last.createdAt,
+      topRules,
+      status: last.status,
+    };
+  });
+}
+
+export const MOCK_HIGH_RISK_ACCOUNTS_LAST_30_DAYS: HighRiskAccountRow[] =
+  deriveHighRiskAccountsLast30Days();

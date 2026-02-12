@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { useAssistantContext } from "@/lib/AssistantContext";
 import { useReportContext } from "@/lib/ReportContext";
 import {
@@ -20,9 +21,39 @@ import { CustomReportView } from "@/components/reports/CustomReportView";
 
 export default function DashboardPage() {
   const { setAssistantOpen, setAssistantIntent } = useAssistantContext();
-  const { reports, selectedReportId, setSelectedReportId } = useReportContext();
+  const { reports, selectedReportId, setSelectedReportId, removeReport } = useReportContext();
   const [reportSearch, setReportSearch] = useState("");
   const [segmentFilter, setSegmentFilter] = useState<string>("");
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (menuOpenId === null) {
+      setMenuPosition(null);
+      return;
+    }
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const menuWidth = 128;
+    setMenuPosition({
+      top: rect.bottom + 2,
+      left: Math.max(8, rect.right - menuWidth),
+    });
+  }, [menuOpenId]);
+
+  useEffect(() => {
+    if (menuOpenId === null) return;
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      if (triggerRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setMenuOpenId(null);
+    }
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [menuOpenId]);
 
   const filteredReports = useMemo(() => {
     if (!reportSearch.trim()) return reports;
@@ -228,18 +259,67 @@ export default function DashboardPage() {
             </p>
           ) : (
             filteredReports.map((report) => (
-              <button
+              <div
                 key={report.id}
-                type="button"
-                onClick={() => setSelectedReportId(report.id)}
-                className={`text-left px-3 py-2 rounded text-sm w-full transition-colors ${
+                className={`group flex items-center gap-1 rounded text-sm w-full min-w-0 ${
                   selectedReportId === report.id
                     ? "bg-brand/20 text-brand"
                     : "text-[#8b9cad] hover:bg-surface-elevated hover:text-white"
                 }`}
               >
-                {report.title}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedReportId(report.id)}
+                  className="flex-1 text-left px-3 py-2 rounded truncate transition-colors min-w-0"
+                >
+                  {report.title}
+                </button>
+                {report.type === "custom" && (
+                  <div className="relative shrink-0 pr-1">
+                    <button
+                      ref={menuOpenId === report.id ? triggerRef : undefined}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpenId((prev) => (prev === report.id ? null : report.id));
+                      }}
+                      className="p-1.5 rounded text-[#8b9cad] opacity-0 group-hover:opacity-100 hover:bg-surface-overlay hover:text-white transition-opacity"
+                      aria-label="Report options"
+                      aria-expanded={menuOpenId === report.id}
+                      aria-haspopup="true"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16" aria-hidden>
+                        <circle cx="8" cy="3" r="1.25" />
+                        <circle cx="8" cy="8" r="1.25" />
+                        <circle cx="8" cy="13" r="1.25" />
+                      </svg>
+                    </button>
+                    {menuOpenId === report.id &&
+                      menuPosition &&
+                      typeof document !== "undefined" &&
+                      createPortal(
+                        <div
+                          ref={menuRef}
+                          className="fixed z-[100] py-1 min-w-[8rem] rounded-md border border-border bg-surface-elevated shadow-lg"
+                          style={{ top: menuPosition.top, left: menuPosition.left }}
+                        >
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeReport(report.id);
+                              setMenuOpenId(null);
+                            }}
+                            className="w-full text-left px-3 py-1.5 text-sm text-red-400 hover:bg-surface-overlay rounded"
+                          >
+                            Delete
+                          </button>
+                        </div>,
+                        document.body
+                      )}
+                  </div>
+                )}
+              </div>
             ))
           )}
         </nav>

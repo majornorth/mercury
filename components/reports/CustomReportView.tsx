@@ -1,10 +1,24 @@
 import type { Report } from "@/lib/ReportContext";
+import { ReportHighRiskAccountsLast30Days } from "./ReportHighRiskAccountsLast30Days";
+
+/** Detect if the report request is for "high-risk accounts last 30 days" so we can render the dedicated view. */
+function isHighRiskAccountsLast30Days(report: Report): boolean {
+  const text = [report.title, report.prompt].filter(Boolean).join(" ").toLowerCase();
+  return (
+    (text.includes("high-risk") || text.includes("high risk")) &&
+    (text.includes("30 days") || text.includes("last 30"))
+  );
+}
 
 interface CustomReportViewProps {
   report: Report;
 }
 
 export function CustomReportView({ report }: CustomReportViewProps) {
+  if (isHighRiskAccountsLast30Days(report)) {
+    return <ReportHighRiskAccountsLast30Days />;
+  }
+
   return (
     <div className="space-y-6">
       <section className="rounded-lg border border-border bg-surface-elevated overflow-hidden p-6">

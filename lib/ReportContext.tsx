@@ -52,6 +52,7 @@ interface ReportContextValue {
   selectedReportId: string | null;
   setSelectedReportId: (id: string | null) => void;
   addReport: (title: string, prompt?: string) => string;
+  removeReport: (id: string) => void;
 }
 
 const ReportContext = createContext<ReportContextValue | null>(null);
@@ -83,11 +84,17 @@ export function ReportProvider({ children }: { children: ReactNode }) {
     return id;
   }, []);
 
+  const removeReport = useCallback((id: string) => {
+    if (!id.startsWith("custom-")) return;
+    setCustomReports((prev) => prev.filter((r) => r.id !== id));
+    setSelectedReportId((current) => (current === id ? DEFAULT_REPORT_ID : current));
+  }, []);
+
   const reports = hydrated ? [...BUILT_IN_REPORTS, ...customReports] : BUILT_IN_REPORTS;
 
   return (
     <ReportContext.Provider
-      value={{ reports, selectedReportId, setSelectedReportId, addReport }}
+      value={{ reports, selectedReportId, setSelectedReportId, addReport, removeReport }}
     >
       {children}
     </ReportContext.Provider>
