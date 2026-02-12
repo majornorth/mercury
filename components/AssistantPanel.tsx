@@ -2,12 +2,16 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useAlertContext } from "@/lib/AlertContext";
+import { useAssistantContext } from "@/lib/AssistantContext";
+
+const ADD_REPORT_INTRO =
+  "You can add a custom report to this page. Describe what you want (e.g. alert volume by segment, outcomes by rule) and I'll generate a read-only view. Views use allowlisted data only and are labeled as strategist-created.";
 
 const STUB_RESPONSES: Record<string, string> = {
   "why was this account flagged":
     "This account was flagged due to rule hits on **TM-INTL-WIRE-VELOCITY** (3 international wires to the same jurisdiction in 7 days) and **TM-LARGE-SINGLE** (single wire > $50k). Top signal contributions: International wire velocity (35%), Single transaction size (28%), New account activity (24%). You can see the full breakdown on the alert detail page.",
   "what similar cases exist":
-    "Similar cases in the last 90 days: 2 ecommerce accounts with TM-INTL-WIRE-VELOCITY — one closed no action, one escalated to partner bank. 1 saas account with ONB-BENEFICIAL-OWNER — escalated. Outcomes are available in Custom views (filter by rule and outcome).",
+    "Similar cases in the last 90 days: 2 ecommerce accounts with TM-INTL-WIRE-VELOCITY — one closed no action, one escalated to partner bank. 1 saas account with ONB-BENEFICIAL-OWNER — escalated. Outcomes are available on the Dashboard (filter by rule and outcome).",
   "summarize this case":
     "[AI-generated draft] Account Acme Logistics LLC (acc-101) was referred for review following transaction monitoring alerts (TM-INTL-WIRE-VELOCITY, TM-LARGE-SINGLE). Risk score 0.87. Key signals: international wire velocity, single large wire, high volume in first 30 days. Pending strategist review and disposition. — *Edit and sign off before sending.*",
 };
@@ -28,16 +32,17 @@ function getStubResponse(
   const hint = currentAlert
     ? ` I'm scoped to alert **${currentAlert.alertId}** (${currentAlert.accountName}).`
     : "";
+  const addReportHint =
+    lower.includes("add") && (lower.includes("report") || lower.includes("view") || lower.includes("dashboard"));
+  if (addReportHint) {
+    return "In production, I would add that report to your Dashboard. The View Engine would generate a read-only view from your description (allowlisted data only). You can refine it by asking to add filters or group by different dimensions.";
+  }
   return `In production, the Assistant would use Mercury internal context (schemas, rules, policies) to answer.${hint} Try: "Why was this account flagged?", "What similar cases exist?", or "Summarize this case for partner bank escalation."`;
 }
 
-interface AssistantPanelProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-export function AssistantPanel({ open, onClose }: AssistantPanelProps) {
+export function AssistantPanel() {
   const { currentAlert } = useAlertContext();
+  const { assistantOpen, setAssistantOpen, assistantIntent, clearAssistantIntent } = useAssistantContext();
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
     {
       role: "assistant",
@@ -52,6 +57,13 @@ export function AssistantPanel({ open, onClose }: AssistantPanelProps) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (assistantOpen && assistantIntent === "add_report") {
+      setMessages((m) => [...m, { role: "assistant", content: ADD_REPORT_INTRO }]);
+      clearAssistantIntent();
+    }
+  }, [assistantOpen, assistantIntent, clearAssistantIntent]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,18 +81,18 @@ export function AssistantPanel({ open, onClose }: AssistantPanelProps) {
 
   return (
     <aside
-      className={`shrink-0 flex flex-col min-h-0 border-l border-border bg-surface-elevated transition-[width] duration-200 ease-out overflow-hidden ${
-        open ? "w-[28rem]" : "w-0"
+      className={`fixed flex flex-col top-14 right-0 bottom-0 border-l border-border bg-surface-elevated transition-[width] duration-200 ease-out overflow-hidden z-10 ${
+        assistantOpen ? "w-[28rem]" : "w-0"
       }`}
       aria-label="Assistant"
-      aria-hidden={!open}
+      aria-hidden={!assistantOpen}
     >
-      <div className="flex flex-col h-full min-w-[28rem]">
+      <div className="flex flex-col h-full min-h-0 min-w-[28rem]">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
           <h2 className="text-sm font-semibold text-white">Assistant</h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => setAssistantOpen(false)}
             className="p-2 rounded-md text-[#8b9cad] hover:text-white hover:bg-surface-overlay transition-colors"
             aria-label="Close Assistant"
           >

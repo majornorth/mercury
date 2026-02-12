@@ -28,7 +28,7 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <div className="mb-6">
         <Link
-          href="/"
+          href="/alerts"
           className="text-sm text-[#8b9cad] hover:text-white mb-2 inline-block"
         >
           ← Triage

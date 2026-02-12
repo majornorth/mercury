@@ -21,7 +21,7 @@ Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [Technical Design](docs/
 | Item | Status |
 |------|--------|
 | Next.js app scaffold (App Router, TypeScript, Tailwind) | [x] |
-| Layout with nav (Triage, Rules, Cases, Custom views, Audit; Assistant as side panel entry) | [x] |
+| Layout with nav (Dashboard, Alerts, Cases, Rules, Audit; Assistant as side panel entry) | [x] |
 | Assistant as side panel (open/close from nav button, flex sibling of main, below header) | [x] |
 | Graceful degradation: core triage and views usable without Assistant | [x] |
 
@@ -86,7 +86,7 @@ Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [Technical Design](docs/
 |------|--------|
 | Custom view (tables + filters) with mock data; “Strategist-created” labeling | [x] |
 | Custom reports: strategist-oriented analytical tables (outcomes by segment, rule performance by segment) | [x] |
-| Create new view placeholder (NL input + message on Custom views page) | [x] |
+| Add report button on Dashboard opens Assistant with add-report context (NL request for custom report) | [x] |
 | Natural language → view spec (LLM + allowlisted schema) | [ ] |
 | View Engine: spec execution, allowlist, RBAC at execution time | [ ] |
 | Save/view/template: versioning, diff, rollback | [ ] |
@@ -131,4 +131,4 @@ Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [Technical Design](docs/
 
 ---
 
-*Last updated: 2025-02-12 — Agent: Added 3 mock rules (TM-RAPID-MOVEMENT, TM-HIGH-RISK-JURISDICTION, ONB-SANCTIONS-EDGE) to rules reference; wired into mock alerts and rule performance by segment. See .cursor/rules/todo-status.mdc for update rules.*
+*Last updated: 2025-02-12 — Dashboard as primary view (/) with custom reports; Alerts at /alerts; Add report opens Assistant with add-report context.*

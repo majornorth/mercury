@@ -3,22 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CURRENT_USER_ID, getMockUser } from "@/lib/mockUsers";
+import { useAssistantContext } from "@/lib/AssistantContext";
 
 const navItems = [
-  { href: "/", label: "Alerts" },
+  { href: "/", label: "Dashboard" },
+  { href: "/alerts", label: "Alerts" },
   { href: "/cases", label: "Cases" },
   { href: "/rules", label: "Rules" },
   { href: "/audit", label: "Audit" },
-  { href: "/views", label: "Custom reports" },
 ];
 
-interface NavProps {
-  onToggleAssistant: () => void;
-  assistantOpen: boolean;
-}
-
-export function Nav({ onToggleAssistant, assistantOpen }: NavProps) {
+export function Nav() {
   const pathname = usePathname();
+  const { assistantOpen, setAssistantOpen } = useAssistantContext();
 
   return (
     <header className="border-b border-border bg-surface-elevated sticky top-0 z-20">
@@ -51,7 +48,7 @@ export function Nav({ onToggleAssistant, assistantOpen }: NavProps) {
           <span className="text-xs text-[#8b9cad] hidden sm:inline">Internal use only</span>
           <button
             type="button"
-            onClick={onToggleAssistant}
+            onClick={() => setAssistantOpen(!assistantOpen)}
             className={`px-3 py-2 rounded-md text-sm font-medium transition-colors border ${
               assistantOpen
                 ? "bg-[#6ea8fe]/20 text-[#6ea8fe] border-[#6ea8fe]/60"
