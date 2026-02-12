@@ -44,6 +44,19 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(18rem,22rem)] gap-6 lg:gap-8">
         <div className="space-y-6 min-w-0">
         <section className="rounded-lg border border-border bg-surface-elevated p-4">
+          <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Decision lineage</h2>
+          <p className="text-xs text-[#8b9cad] mb-2">
+            Which rules fired, which policy version was active, and who last modified the logic. Critical for audit and partner bank trust.
+          </p>
+          <ul className="text-sm space-y-1 text-white">
+            <li><span className="text-[#8b9cad]">Rules fired:</span> {alert.ruleNames.join(", ")} (version 2025.2.1)</li>
+            <li><span className="text-[#8b9cad]">Thresholds applied:</span> Per rule definition as of policy v2.4</li>
+            <li><span className="text-[#8b9cad]">Policy version:</span> AML-ONB-2025-Q1</li>
+            <li><span className="text-[#8b9cad]">Last logic change:</span> TM-INTL-WIRE-VELOCITY · 2025-02-01 · J. Smith (Risk)</li>
+          </ul>
+        </section>
+
+        <section className="rounded-lg border border-border bg-surface-elevated p-4">
           <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Rule hits</h2>
           <ul className="list-disc list-inside text-sm">
             {alert.ruleNames.map((r) => (
@@ -58,6 +71,19 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
             <Link href="/rules" className="text-brand hover:underline">Rules reference</Link> for definitions and thresholds.
           </p>
         </section>
+
+        {detail && (
+          <section className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4">
+            <h2 className="text-sm font-medium text-amber-400 mb-2">Uncertainty</h2>
+            <p className="text-xs text-[#8b9cad] mb-2">
+              Explicit uncertainty markers for strategist review. Surfaces incomplete data or low-confidence signals.
+            </p>
+            <ul className="text-sm space-y-1">
+              <li className="text-amber-200">Signal confidence: {detail.riskScore >= 0.8 ? "high" : "low"} (score {detail.riskScore})</li>
+              <li className="text-[#8b9cad]">Data incomplete: counterparty enrichment pending for 1 wire</li>
+            </ul>
+          </section>
+        )}
 
         {detail?.signalContributions && (
           <section className="rounded-lg border border-border bg-surface-elevated p-4">

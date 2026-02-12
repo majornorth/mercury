@@ -15,6 +15,17 @@ const STUB_RESPONSES: Record<string, string> = {
     "Similar cases in the last 90 days: 2 ecommerce accounts with TM-INTL-WIRE-VELOCITY — one closed no action, one escalated to partner bank. 1 saas account with ONB-BENEFICIAL-OWNER — escalated. Outcomes are available on the Reports page (filter by rule and outcome).",
   "summarize this case":
     "[AI-generated draft] Account Acme Logistics LLC (acc-101) was referred for review following transaction monitoring alerts (TM-INTL-WIRE-VELOCITY, TM-LARGE-SINGLE). Risk score 0.87. Key signals: international wire velocity, single large wire, high volume in first 30 days. Pending strategist review and disposition. — *Edit and sign off before sending.*",
+  // Counter-argument / tension (v2)
+  "strongest argument against":
+    "**Strongest argument against blocking:** This behavior violates Rule A (TM-INTL-WIRE-VELOCITY) but **resembles 42 previously approved cases** in the ecommerce segment with similar wire velocity. The main uncertainty is whether the counterparty jurisdiction has been reclassified. A regulator or partner bank might ask: *Why treat this one differently from those 42?* Consider documenting the distinguishing factor or revisiting the segment threshold.",
+  "argument against blocking":
+    "**Argument against blocking:** Same as above — 42 approved ecommerce cases with similar patterns. The main tension is consistency: if we block here, we may need to re-review the segment or document why this case is an exception.",
+  "conflict with policy":
+    "**Where this case conflicts with stated policy:** Policy says we require source-of-funds documentation for wires >$50k to high-risk jurisdictions. This case has one wire at $52k; documentation was requested but not yet received. The case is still open — the conflict is *pending documentation*, not a past inconsistency. If we close without it, that would conflict with policy.",
+  "what would a regulator":
+    "**What a regulator or partner bank might challenge:** (1) **Consistency** — 42 similar ecommerce cases were approved; what changed? (2) **Documentation** — Was source-of-funds obtained and retained? (3) **Threshold drift** — Is the 7-day window for TM-INTL-WIRE-VELOCITY still justified by our typology? I'm surfacing tension, not recommending an answer.",
+  "regulator challenge":
+    "**Likely regulator/partner bank challenges:** Consistency with prior approvals; completeness of documentation; and whether the rule threshold (e.g. 3 wires in 7 days) is still policy-aligned. Recommend documenting the rationale for any exception.",
 };
 
 /** Match "create a/new report for X" and return the report description X, or null. */
@@ -32,6 +43,10 @@ function getStubResponse(
   currentAlert: { alertId: string; accountName: string } | null
 ): string {
   const lower = text.toLowerCase();
+  // Counter-argument prompts (check first so they take precedence)
+  if (lower.includes("strongest argument against") || lower.includes("argument against blocking")) return STUB_RESPONSES["strongest argument against"];
+  if (lower.includes("conflict with policy")) return STUB_RESPONSES["conflict with policy"];
+  if (lower.includes("regulator") && (lower.includes("challenge") || lower.includes("would"))) return STUB_RESPONSES["what would a regulator"];
   for (const [key, value] of Object.entries(STUB_RESPONSES)) {
     if (lower.includes(key)) {
       if (key === "summarize this case" && currentAlert) {
@@ -148,7 +163,7 @@ export function AssistantPanel() {
           </button>
         </div>
 
-        <div className="px-4 pt-4 pb-3 border-b border-border shrink-0 space-y-1">
+        <div className="px-4 pt-4 pb-3 border-b border-border shrink-0 space-y-2">
           {currentAlert && (
             <p className="text-xs text-brand">
               Viewing alert <span className="font-mono">{currentAlert.alertId}</span> ({currentAlert.accountName})
@@ -157,6 +172,25 @@ export function AssistantPanel() {
           <p className="text-xs text-[#8b9cad]">
             Answers are for support only; final decisions are yours.
           </p>
+          <p className="text-xs text-[#8b9cad] font-medium mt-1.5">Counter-argument prompts:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              "Strongest argument against blocking",
+              "Where does this conflict with policy?",
+              "What would a regulator challenge?",
+            ].map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => {
+                  setInput(label);
+                }}
+                className="text-xs px-2 py-1 rounded border border-border bg-surface hover:bg-surface-overlay text-[#8b9cad] hover:text-white transition-colors"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">

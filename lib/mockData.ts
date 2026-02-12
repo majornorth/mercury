@@ -162,6 +162,136 @@ export const MOCK_CASES: CaseSummary[] = [
     segment: "ecommerce",
     rationale: "Aligned with case-1 (same segment, TM-INTL-WIRE-VELOCITY); closed no action.",
   },
+  {
+    id: "case-4",
+    alertId: "alt-007",
+    outcome: "approved",
+    closedAt: "2025-02-10T09:00:00Z",
+    segment: "ecommerce",
+    rationale: "Beneficial owner verified; onboarding completed with enhanced monitoring for 90 days.",
+  },
+  {
+    id: "case-5",
+    alertId: "alt-008",
+    outcome: "escalated",
+    closedAt: "2025-02-11T14:00:00Z",
+    segment: "fintech",
+    rationale: "High-risk jurisdiction exposure and cash-intensive pattern; handed off to partner bank for decision.",
+  },
+  {
+    id: "case-6",
+    alertId: "alt-012",
+    outcome: "sar",
+    closedAt: "2025-02-09T11:30:00Z",
+    segment: "fintech",
+    rationale: "Structuring indicators and cash-intensive activity; SAR filed; account restricted pending investigation.",
+  },
+  {
+    id: "case-7",
+    alertId: "alt-013",
+    outcome: "closed_no_action",
+    closedAt: "2025-02-10T12:00:00Z",
+    segment: "ecommerce",
+    rationale: "Single large wire explained as inventory purchase; documentation on file.",
+  },
+  {
+    id: "case-8",
+    alertId: "alt-018",
+    outcome: "approved",
+    closedAt: "2025-02-09T15:00:00Z",
+    segment: "saas",
+    rationale: "Large single transaction and beneficial owner alert cleared after verification; no adverse findings.",
+  },
+  {
+    id: "case-9",
+    alertId: "alt-019",
+    outcome: "escalated",
+    closedAt: "2025-02-11T10:00:00Z",
+    segment: "ecommerce",
+    rationale: "International wire velocity to jurisdiction under review; escalated to compliance for jurisdiction reassessment.",
+  },
+  {
+    id: "case-10",
+    alertId: "alt-023",
+    outcome: "closed_no_action",
+    closedAt: "2025-02-08T16:00:00Z",
+    segment: "fintech",
+    rationale: "Beneficial owner and sanctions edge case; all clear after re-screening and source-of-funds review.",
+  },
+  {
+    id: "case-11",
+    alertId: "alt-024",
+    outcome: "escalated",
+    closedAt: "2025-02-09T09:00:00Z",
+    segment: "ecommerce",
+    rationale: "Multiple rule hits (structuring, intl wire velocity, large single); escalated to partner bank with full package.",
+  },
+  {
+    id: "case-12",
+    alertId: "alt-006",
+    outcome: "denied",
+    closedAt: "2025-02-11T17:30:00Z",
+    segment: "fintech",
+    rationale: "Structuring pattern not sufficiently explained; relationship terminated per policy.",
+  },
+  {
+    id: "case-13",
+    alertId: "alt-003",
+    segment: "fintech",
+    rationale: undefined,
+  },
+  {
+    id: "case-14",
+    alertId: "alt-005",
+    outcome: "closed_no_action",
+    closedAt: "2025-02-12T09:00:00Z",
+    segment: "ecommerce",
+    rationale: "Large single and intl wire velocity consistent with declared trade; closed no action.",
+  },
+  {
+    id: "case-15",
+    alertId: "alt-009",
+    segment: "ecommerce",
+    rationale: undefined,
+  },
+  {
+    id: "case-16",
+    alertId: "alt-010",
+    outcome: "approved",
+    closedAt: "2025-02-11T13:00:00Z",
+    segment: "saas",
+    rationale: "Beneficial owner and large single verified; account approved with standard monitoring.",
+  },
+  {
+    id: "case-17",
+    alertId: "alt-014",
+    outcome: "sar",
+    closedAt: "2025-02-12T04:30:00Z",
+    segment: "fintech",
+    rationale: "Cash-intensive and intl wire velocity; SAR filed; account frozen pending review.",
+  },
+  {
+    id: "case-18",
+    alertId: "alt-017",
+    outcome: "closed_no_action",
+    closedAt: "2025-02-11T11:00:00Z",
+    segment: "fintech",
+    rationale: "Structuring alert; pattern explained as payroll and vendor batches; no action.",
+  },
+  {
+    id: "case-19",
+    alertId: "alt-021",
+    segment: "saas",
+    rationale: undefined,
+  },
+  {
+    id: "case-20",
+    alertId: "alt-022",
+    outcome: "approved",
+    closedAt: "2025-02-10T14:00:00Z",
+    segment: "ecommerce",
+    rationale: "Intl wire and cash-intensive activity aligned with declared wholesale imports; approved.",
+  },
 ];
 
 // --- Custom report mock data (strategist-oriented analytical views) ---
@@ -468,3 +598,53 @@ function deriveHighRiskAccountsLast30Days(): HighRiskAccountRow[] {
 
 export const MOCK_HIGH_RISK_ACCOUNTS_LAST_30_DAYS: HighRiskAccountRow[] =
   deriveHighRiskAccountsLast30Days();
+
+// --- System Health (v2: strategist control plane default landing) ---
+
+export interface SystemHealthSummary {
+  /** This week vs last week (or baseline). */
+  alertVolumeVsBaseline: { thisWeek: number; lastWeek: number; pctChange: number };
+  /** False-positive proxy: % of resolved alerts closed with no action (overall). */
+  falsePositiveProxyPct: number;
+  /** Investigator override rate: % of alerts where investigator overrode rule/recommendation. */
+  overrideRatePct: number;
+  /** Top rules by alert volume (rule id, count). */
+  topRulesByVolume: { ruleId: string; ruleName: string; alertCount: number }[];
+  /** Top rules by override / closed-no-action (proxy for "error" contribution). */
+  topRulesByOverride: { ruleId: string; ruleName: string; overrideCount: number; pctOfResolved: number }[];
+}
+
+function deriveSystemHealthSummary(): SystemHealthSummary {
+  const thisWeek = MOCK_ALERTS.filter((a) => a.createdAt >= "2025-02-10").length;
+  const lastWeek = 18; // mock baseline
+  const pctChange = lastWeek > 0 ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : 0;
+  const totalResolved = MOCK_ALERTS.filter((a) => a.status === "closed" || a.status === "escalated").length;
+  const closedNoAction = MOCK_ALERTS.filter((a) => a.status === "closed").length; // simplified: treat closed as no-action for proxy
+  const falsePositiveProxyPct = totalResolved > 0 ? Math.round((closedNoAction / totalResolved) * 100) : 0;
+  const overrideCount = 4; // mock: investigator overrode rule recommendation
+  const overrideRatePct = totalResolved > 0 ? Math.round((overrideCount / totalResolved) * 100) : 0;
+  const byRule: Record<string, number> = {};
+  for (const a of MOCK_ALERTS) {
+    for (const r of a.ruleNames) {
+      byRule[r] = (byRule[r] ?? 0) + 1;
+    }
+  }
+  const topRulesByVolume = Object.entries(byRule)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([ruleId, alertCount]) => ({ ruleId, ruleName: ruleId, alertCount }));
+  const topRulesByOverride = [
+    { ruleId: "TM-INTL-WIRE-VELOCITY", ruleName: "TM-INTL-WIRE-VELOCITY", overrideCount: 2, pctOfResolved: 22 },
+    { ruleId: "TM-LARGE-SINGLE", ruleName: "TM-LARGE-SINGLE", overrideCount: 1, pctOfResolved: 11 },
+    { ruleId: "ONB-BENEFICIAL-OWNER", ruleName: "ONB-BENEFICIAL-OWNER", overrideCount: 1, pctOfResolved: 11 },
+  ];
+  return {
+    alertVolumeVsBaseline: { thisWeek, lastWeek, pctChange },
+    falsePositiveProxyPct,
+    overrideRatePct,
+    topRulesByVolume,
+    topRulesByOverride,
+  };
+}
+
+export const MOCK_SYSTEM_HEALTH: SystemHealthSummary = deriveSystemHealthSummary();

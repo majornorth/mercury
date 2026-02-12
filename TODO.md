@@ -2,7 +2,7 @@
 
 Status key: `[x]` Done · `[ ]` Not started · `[-]` In progress / partial
 
-Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [Technical Design](docs/Technical-Design-Risk-Operations-Platform.md).
+Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [PRD v2 (Strategist Control Plane)](docs/PRD-Risk-Operations-Platform-v2.md), [Technical Design](docs/Technical-Design-Risk-Operations-Platform.md).
 
 ---
 
@@ -134,4 +134,19 @@ Reference: [PRD](docs/PRD-Risk-Operations-Platform.md), [Technical Design](docs/
 
 ---
 
-*Last updated: 2025-02-12 — High-risk accounts last 30 days: mock data, ReportHighRiskAccountsLast30Days UI, CustomReportView detection; Assistant “create report for …” adds report and shows table when prompt matches.*
+## 11. v2 / Strategist-grade (PRD v2)
+
+See [PRD v2](docs/PRD-Risk-Operations-Platform-v2.md) for the strategist control plane evolution. Work items below are derived from v2.
+
+| Item | Status |
+|------|--------|
+| System Health default landing: alert volume vs baseline, false-positive proxy, override rates, top rule contributors (data + UI) | [x] |
+| Decision lineage: rule/threshold/policy version and "who changed" on alerts, cases, recommendations; lineage in case view | [x] |
+| Uncertainty and lineage in case view: e.g. "Signal confidence: low", "Data incomplete", decision history (e.g. rule disabled on date, override reason) | [x] |
+| LLM counter-argument mode: prompts and UX for "strongest argument against", "where does this conflict with policy", "what would regulator challenge" | [x] |
+| Self-serve: Sandbox vs Operational — Sandbox (private, time-boxed, labeled exploratory) vs Operational (justification, versioned, logged, shareable); blast-radius and PII labels | [x] |
+| Explicit tradeoffs UI: when changing rules/thresholds, show estimated impact (e.g. false positive %, segment impact, affected customers) where feasible | [x] |
+
+---
+
+*Last updated: 2025-02-12 — Added more mock cases for Cases page (20 total).*

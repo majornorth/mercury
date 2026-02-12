@@ -40,6 +40,34 @@ export function CaseDetailView({ caseItem, alert, similarCases }: CaseDetailView
       <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(18rem,22rem)] gap-6 lg:gap-8">
         <div className="space-y-6 min-w-0">
           <section className="rounded-lg border border-border bg-surface-elevated p-4">
+            <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Decision lineage</h2>
+            <p className="text-xs text-[#8b9cad] mb-2">
+              Why this case was decided this way; rule and policy context; overrides and exceptions.
+            </p>
+            <ul className="text-sm space-y-1 text-white">
+              <li><span className="text-[#8b9cad]">Policy version:</span> AML-ONB-2025-Q1</li>
+              <li><span className="text-[#8b9cad]">Last logic change:</span> 2025-02-01 · J. Smith (Risk)</li>
+              {caseItem.outcome === "closed_no_action" && (
+                <li className="text-[#8b9cad]">Aligned with 2 similar ecommerce cases (TM-INTL-WIRE-VELOCITY) closed no action.</li>
+              )}
+              {caseItem.outcome === "escalated" && (
+                <li className="text-[#8b9cad]">Override added during backlog surge; beneficial owner structure unclear — escalated to partner bank.</li>
+              )}
+            </ul>
+          </section>
+
+          <section className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4">
+            <h2 className="text-sm font-medium text-amber-400 mb-2">Uncertainty</h2>
+            <p className="text-xs text-[#8b9cad] mb-2">
+              Data gaps or low-confidence signals that may affect disposition.
+            </p>
+            <ul className="text-sm space-y-1">
+              <li className="text-amber-200">Signal confidence: low — resembles 42 previously approved cases in this segment</li>
+              <li className="text-[#8b9cad]">Data incomplete: missing counterparty enrichment for 1 transaction</li>
+            </ul>
+          </section>
+
+          <section className="rounded-lg border border-border bg-surface-elevated p-4">
             <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Linked alert</h2>
             <p className="text-sm">
               {alert ? (

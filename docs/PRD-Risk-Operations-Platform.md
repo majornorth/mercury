@@ -9,7 +9,7 @@
 
 ## Summary
 
-This PRD defines an **internal operations application** for Mercury used by **Risk Strategists** to combat financial crime (e.g., money laundering, fraud, human exploitation). The tool supports high-stakes decision-making during onboarding and ongoing account monitoring, balancing risk detection, operational efficiency, and customer impact. The product is **agentic by default** (LLM-powered) and includes **self-serve creation of custom tools and dashboards** by strategists, with clear boundaries between deterministic systems and AI, plus guardrails and auditability.
+This PRD defines an **internal operations application** for Mercury used by **Risk Strategists** to combat financial crime (e.g., money laundering, fraud, human exploitation). The tool supports high-stakes decision-making during onboarding and ongoing account monitoring, balancing risk detection, operational efficiency, and customer impact. The product is **agentic by default** (LLM-powered) and includes **self-serve creation of custom tools and dashboards** by strategists, with clear boundaries between deterministic systems and AI, plus guardrails and auditability. For the **strategist control plane** evolution (system health as default, decision lineage, counter-argument LLM, Sandbox vs. Operational views), see [PRD v2](PRD-Risk-Operations-Platform-v2.md).
 
 ---
 

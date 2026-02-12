@@ -4,12 +4,19 @@ import { createContext, useContext, useState, useCallback, useEffect, type React
 
 export type ReportType = "builtin" | "custom";
 
+/** v2: Sandbox = exploratory, private, time-boxed; Operational = justified, versioned, logged, shareable. */
+export type ReportMode = "sandbox" | "operational";
+
 export interface Report {
   id: string;
   title: string;
   type: ReportType;
   /** Only set for custom reports: the user's prompt that created the report. */
   prompt?: string;
+  /** Only for custom reports: Sandbox (default) vs Operational. */
+  mode?: ReportMode;
+  /** Only for custom reports: whether the view touches PII (for blast-radius labeling). */
+  touchesPii?: boolean;
 }
 
 const BUILT_IN_REPORTS: Report[] = [
@@ -32,7 +39,14 @@ function loadCustomReports(): Report[] {
     const raw = localStorage.getItem(CUSTOM_REPORTS_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as Report[];
-    return Array.isArray(parsed) ? parsed.filter((r) => r.id?.startsWith("custom-") && r.title) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((r) => r.id?.startsWith("custom-") && r.title)
+      .map((r) => ({
+        ...r,
+        mode: r.mode ?? "sandbox",
+        touchesPii: r.touchesPii ?? false,
+      }));
   } catch {
     return [];
   }
@@ -51,7 +65,7 @@ interface ReportContextValue {
   reports: Report[];
   selectedReportId: string | null;
   setSelectedReportId: (id: string | null) => void;
-  addReport: (title: string, prompt?: string) => string;
+  addReport: (title: string, prompt?: string, options?: { mode?: ReportMode; touchesPii?: boolean }) => string;
   removeReport: (id: string) => void;
 }
 
@@ -71,13 +85,15 @@ export function ReportProvider({ children }: { children: ReactNode }) {
     if (hydrated) saveCustomReports(customReports);
   }, [hydrated, customReports]);
 
-  const addReport = useCallback((title: string, prompt?: string) => {
+  const addReport = useCallback((title: string, prompt?: string, options?: { mode?: ReportMode; touchesPii?: boolean }) => {
     const id = `custom-${Date.now()}`;
     const report: Report = {
       id,
       title: title.trim() || "Custom report",
       type: "custom",
       prompt: prompt?.trim(),
+      mode: options?.mode ?? "sandbox",
+      touchesPii: options?.touchesPii ?? false,
     };
     setCustomReports((prev) => [...prev, report]);
     setSelectedReportId(id);
