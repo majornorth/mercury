@@ -4,6 +4,7 @@ import { Nav } from "@/components/Nav";
 import { AssistantPanel } from "@/components/AssistantPanel";
 import { AlertProvider } from "@/lib/AlertContext";
 import { AssistantProvider } from "@/lib/AssistantContext";
+import { ReportProvider } from "@/lib/ReportContext";
 import { useAssistantContext } from "@/lib/AssistantContext";
 
 function AppShellInner({ children }: { children: React.ReactNode }) {
@@ -29,7 +30,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <AlertProvider>
       <AssistantProvider>
-        <AppShellInner>{children}</AppShellInner>
+        <ReportProvider>
+          <AppShellInner>{children}</AppShellInner>
+        </ReportProvider>
       </AssistantProvider>
     </AlertProvider>
   );

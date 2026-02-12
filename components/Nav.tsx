@@ -6,7 +6,7 @@ import { CURRENT_USER_ID, getMockUser } from "@/lib/mockUsers";
 import { useAssistantContext } from "@/lib/AssistantContext";
 
 const navItems = [
-  { href: "/", label: "Dashboard" },
+  { href: "/", label: "Reports" },
   { href: "/alerts", label: "Alerts" },
   { href: "/cases", label: "Cases" },
   { href: "/rules", label: "Rules" },

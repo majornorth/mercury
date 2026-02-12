@@ -3,15 +3,16 @@
 import { useState, useRef, useEffect } from "react";
 import { useAlertContext } from "@/lib/AlertContext";
 import { useAssistantContext } from "@/lib/AssistantContext";
+import { useReportContext } from "@/lib/ReportContext";
 
 const CREATE_REPORT_INTRO =
-  "You can create a custom report for your dashboard. Describe what you want (e.g. alert volume by segment, outcomes by rule) and I'll generate a read-only view. Views use allowlisted data only and are labeled as strategist-created.";
+  "You can create a custom report for your Reports page. Describe what you want in the box below (e.g. \"alert volume by segment\", \"outcomes by rule\", \"high-risk accounts last 30 days\") and I'll add it to your report list. You can then open it from the Reports page. Views use allowlisted data only and are labeled as strategist-created.";
 
 const STUB_RESPONSES: Record<string, string> = {
   "why was this account flagged":
     "This account was flagged due to rule hits on **TM-INTL-WIRE-VELOCITY** (3 international wires to the same jurisdiction in 7 days) and **TM-LARGE-SINGLE** (single wire > $50k). Top signal contributions: International wire velocity (35%), Single transaction size (28%), New account activity (24%). You can see the full breakdown on the alert detail page.",
   "what similar cases exist":
-    "Similar cases in the last 90 days: 2 ecommerce accounts with TM-INTL-WIRE-VELOCITY — one closed no action, one escalated to partner bank. 1 saas account with ONB-BENEFICIAL-OWNER — escalated. Outcomes are available on the Dashboard (filter by rule and outcome).",
+    "Similar cases in the last 90 days: 2 ecommerce accounts with TM-INTL-WIRE-VELOCITY — one closed no action, one escalated to partner bank. 1 saas account with ONB-BENEFICIAL-OWNER — escalated. Outcomes are available on the Reports page (filter by rule and outcome).",
   "summarize this case":
     "[AI-generated draft] Account Acme Logistics LLC (acc-101) was referred for review following transaction monitoring alerts (TM-INTL-WIRE-VELOCITY, TM-LARGE-SINGLE). Risk score 0.87. Key signals: international wire velocity, single large wire, high volume in first 30 days. Pending strategist review and disposition. — *Edit and sign off before sending.*",
 };
@@ -35,7 +36,7 @@ function getStubResponse(
   const addReportHint =
     lower.includes("add") && (lower.includes("report") || lower.includes("view") || lower.includes("dashboard"));
   if (addReportHint) {
-    return "In production, I would create that report and add it to your Dashboard. The View Engine would generate a read-only view from your description (allowlisted data only). You can refine it by asking to add filters or group by different dimensions.";
+    return "In production, I would create that report and add it to your Reports list. The View Engine would generate a read-only view from your description (allowlisted data only). You can refine it by asking to add filters or group by different dimensions.";
   }
   return `In production, the Assistant would use Mercury internal context (schemas, rules, policies) to answer.${hint} Try: "Why was this account flagged?", "What similar cases exist?", or "Summarize this case for partner bank escalation."`;
 }
@@ -43,6 +44,7 @@ function getStubResponse(
 export function AssistantPanel() {
   const { currentAlert } = useAlertContext();
   const { assistantOpen, setAssistantOpen, assistantIntent, clearAssistantIntent } = useAssistantContext();
+  const { addReport } = useReportContext();
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
     {
       role: "assistant",
@@ -52,6 +54,7 @@ export function AssistantPanel() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [createReportPending, setCreateReportPending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,6 +64,7 @@ export function AssistantPanel() {
   useEffect(() => {
     if (assistantOpen && assistantIntent === "add_report") {
       setMessages((m) => [...m, { role: "assistant", content: CREATE_REPORT_INTRO }]);
+      setCreateReportPending(true);
       clearAssistantIntent();
     }
   }, [assistantOpen, assistantIntent, clearAssistantIntent]);
@@ -72,6 +76,22 @@ export function AssistantPanel() {
     setInput("");
     setMessages((m) => [...m, { role: "user", content: userMessage }]);
     setLoading(true);
+
+    if (createReportPending) {
+      setCreateReportPending(false);
+      const title = userMessage.length > 60 ? `${userMessage.slice(0, 57)}…` : userMessage;
+      addReport(title, userMessage);
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: `I've added **"${title}"** to your Reports list. Open it from the report list on the right. In production, the View Engine would generate the read-only view from your description.`,
+        },
+      ]);
+      setLoading(false);
+      return;
+    }
+
     setTimeout(() => {
       const response = getStubResponse(userMessage, currentAlert);
       setMessages((m) => [...m, { role: "assistant", content: response }]);

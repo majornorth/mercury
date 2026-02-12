@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useAssistantContext } from "@/lib/AssistantContext";
+import { useReportContext } from "@/lib/ReportContext";
 import {
   MOCK_OUTCOMES_BY_SEGMENT,
   MOCK_RULE_PERFORMANCE_BY_SEGMENT,
@@ -15,24 +16,11 @@ import { ReportOnboardingReferralsByOutcome } from "@/components/reports/ReportO
 import { ReportTimeToTriageSla } from "@/components/reports/ReportTimeToTriageSla";
 import { ReportEscalationsToPartnerBank } from "@/components/reports/ReportEscalationsToPartnerBank";
 import { ReportSarFilingSummary } from "@/components/reports/ReportSarFilingSummary";
-
-const INITIAL_REPORTS: { id: string; title: string }[] = [
-  { id: "rule-perf-outcomes", title: "Rule performance & outcomes by segment" },
-  { id: "alert-volume-by-rule", title: "Alert volume by rule" },
-  { id: "alert-volume-by-risk-tier-status", title: "Alert volume by risk tier and status" },
-  { id: "case-resolution-over-time", title: "Case resolution over time" },
-  { id: "onboarding-referrals-by-outcome", title: "Onboarding referrals by outcome" },
-  { id: "time-to-triage-sla", title: "Time to triage (SLA)" },
-  { id: "escalations-to-partner-bank", title: "Escalations to partner bank" },
-  { id: "sar-filing-summary", title: "SAR filing summary" },
-];
+import { CustomReportView } from "@/components/reports/CustomReportView";
 
 export default function DashboardPage() {
   const { setAssistantOpen, setAssistantIntent } = useAssistantContext();
-  const [reports] = useState(INITIAL_REPORTS);
-  const [selectedReportId, setSelectedReportId] = useState<string | null>(
-    INITIAL_REPORTS[0]?.id ?? null
-  );
+  const { reports, selectedReportId, setSelectedReportId } = useReportContext();
   const [reportSearch, setReportSearch] = useState("");
   const [segmentFilter, setSegmentFilter] = useState<string>("");
 
@@ -67,7 +55,7 @@ export default function DashboardPage() {
       {/* Left column: main content */}
       <div className="min-w-0 flex-1">
         <div className="mb-6">
-          <h1 className="text-xl font-semibold text-white">Dashboard</h1>
+          <h1 className="text-xl font-semibold text-white">Reports</h1>
           <p className="text-sm text-[#8b9cad] mt-1">
             Your custom reports and analytical views. Create reports via the Assistant; use Alerts and Cases for triage and investigations.
           </p>
@@ -209,6 +197,9 @@ export default function DashboardPage() {
               <ReportEscalationsToPartnerBank />
             )}
             {selectedReportId === "sar-filing-summary" && <ReportSarFilingSummary />}
+            {selectedReport?.type === "custom" && (
+              <CustomReportView report={selectedReport} />
+            )}
           </>
         )}
       </div>
