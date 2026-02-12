@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAlertContext } from "@/lib/AlertContext";
 import { AlertWorkflowActions } from "@/components/AlertWorkflowActions";
-import { MOCK_ALERTS, MOCK_CASES } from "@/lib/mockData";
+import { createCase, getCaseByAlertId, getMergedCases } from "@/lib/caseStore";
+import { MOCK_ALERTS } from "@/lib/mockData";
 import type { Alert, AlertDetail } from "@/lib/mockData";
 
 interface AlertDetailViewProps {
@@ -13,7 +15,9 @@ interface AlertDetailViewProps {
 }
 
 export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
+  const router = useRouter();
   const { setCurrentAlert } = useAlertContext();
+  const relatedCase = getCaseByAlertId(alert.id);
 
   useEffect(() => {
     setCurrentAlert({ alertId: alert.id, accountName: alert.accountName });
@@ -21,7 +25,7 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
   }, [alert.id, alert.accountName, setCurrentAlert]);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <div className="mb-6">
         <Link
           href="/"
@@ -37,14 +41,22 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(18rem,22rem)] gap-6 lg:gap-8">
+        <div className="space-y-6 min-w-0">
         <section className="rounded-lg border border-border bg-surface-elevated p-4">
           <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Rule hits</h2>
           <ul className="list-disc list-inside text-sm">
             {alert.ruleNames.map((r) => (
-              <li key={r}>{r}</li>
+              <li key={r}>
+                <Link href={`/rules#${r}`} className="text-[#6ea8fe] hover:underline font-mono">
+                  {r}
+                </Link>
+              </li>
             ))}
           </ul>
+          <p className="text-xs text-[#8b9cad] mt-2">
+            <Link href="/rules" className="text-[#6ea8fe] hover:underline">Rules reference</Link> for definitions and thresholds.
+          </p>
         </section>
 
         {detail?.signalContributions && (
@@ -74,36 +86,52 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
           </section>
         )}
 
-        {(() => {
-          const relatedCase = MOCK_CASES.find((c) => c.alertId === alert.id);
-          if (!relatedCase) return null;
-          return (
-            <section className="rounded-lg border border-border bg-surface-elevated p-4">
-              <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Related case</h2>
-              <p className="text-sm">
-                <Link
-                  href={`/cases/${relatedCase.id}`}
-                  className="text-[#6ea8fe] hover:underline font-medium"
-                >
-                  {relatedCase.id}
-                </Link>
-                <span className="text-[#8b9cad] ml-2 capitalize">
-                  — {relatedCase.outcome.replace(/_/g, " ")} · closed{" "}
-                  {new Date(relatedCase.closedAt).toLocaleDateString()}
-                </span>
-              </p>
+        {!relatedCase ? (
+          <section className="rounded-lg border border-border bg-surface-elevated p-4">
+            <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Related case</h2>
+            <p className="text-sm text-[#8b9cad] mb-2">
+              Open an investigation case for this alert.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                const newCase = createCase(alert.id, { segment: alert.segment });
+                router.push(`/cases/${newCase.id}`);
+              }}
+              className="rounded-lg bg-[#6ea8fe] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#5b9cfb] transition-colors"
+            >
+              Create case
+            </button>
+          </section>
+        ) : (
+          <section className="rounded-lg border border-border bg-surface-elevated p-4">
+            <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Related case</h2>
+            <p className="text-sm">
               <Link
                 href={`/cases/${relatedCase.id}`}
-                className="inline-block mt-2 text-sm text-[#6ea8fe] hover:underline"
+                className="text-[#6ea8fe] hover:underline font-medium"
               >
-                Open case →
+                {relatedCase.id}
               </Link>
-            </section>
-          );
-        })()}
+              <span className="text-[#8b9cad] ml-2 capitalize">
+                — {relatedCase.outcome != null ? relatedCase.outcome.replace(/_/g, " ") : "Open"}
+                {relatedCase.closedAt != null
+                  ? ` · closed ${new Date(relatedCase.closedAt).toLocaleDateString()}`
+                  : ""}
+              </span>
+            </p>
+            <Link
+              href={`/cases/${relatedCase.id}`}
+              className="inline-block mt-2 text-sm text-[#6ea8fe] hover:underline"
+            >
+              Open case →
+            </Link>
+          </section>
+        )}
 
         {(() => {
-          const otherCases = MOCK_CASES.filter((c) => c.alertId !== alert.id).filter((c) => {
+          const merged = getMergedCases();
+          const otherCases = merged.filter((c) => c.alertId !== alert.id).filter((c) => {
             const otherAlert = MOCK_ALERTS.find((a) => a.id === c.alertId);
             if (!otherAlert) return false;
             const sameSegment = alert.segment && otherAlert.segment && alert.segment === otherAlert.segment;
@@ -127,10 +155,10 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
                       </Link>
                       <span className="text-[#8b9cad]">
                         alert <Link href={`/alerts/${c.alertId}`} className="text-[#6ea8fe] hover:underline font-mono">{c.alertId}</Link>
-                        {otherAlert && ` · ${otherAlert.segment ?? "—"}`} · {c.outcome.replace(/_/g, " ")}
+                        {otherAlert && ` · ${otherAlert.segment ?? "—"}`} · {c.outcome != null ? c.outcome.replace(/_/g, " ") : "Open"}
                       </span>
                       <span className="text-[#8b9cad] text-xs">
-                        closed {new Date(c.closedAt).toLocaleDateString()}
+                        {c.closedAt != null ? `closed ${new Date(c.closedAt).toLocaleDateString()}` : "—"}
                       </span>
                     </li>
                   );
@@ -139,12 +167,16 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
             </section>
           );
         })()}
+        </div>
 
-        <AlertWorkflowActions
-          alertId={alert.id}
-          initialStatus={alert.status}
-          accountName={alert.accountName}
-        />
+        <div className="lg:sticky lg:top-6 lg:self-start">
+          <AlertWorkflowActions
+            alertId={alert.id}
+            initialStatus={alert.status}
+            accountName={alert.accountName}
+            segment={alert.segment}
+          />
+        </div>
       </div>
     </div>
   );

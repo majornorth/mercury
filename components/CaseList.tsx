@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { MOCK_ALERTS, MOCK_CASES } from "@/lib/mockData";
-import type { CaseSummary, OutcomeCode } from "@/lib/mockData";
+import { getMergedCases } from "@/lib/caseStore";
+import { MOCK_ALERTS } from "@/lib/mockData";
+import type { OutcomeCode } from "@/lib/mockData";
 
 function outcomeLabel(code: OutcomeCode): string {
   return code.replace(/_/g, " ");
@@ -10,6 +11,7 @@ function outcomeLabel(code: OutcomeCode): string {
 
 export function CaseList() {
   const alertsById = Object.fromEntries(MOCK_ALERTS.map((a) => [a.id, a]));
+  const cases = getMergedCases();
 
   return (
     <div className="rounded-lg border border-border bg-surface-elevated overflow-hidden">
@@ -26,7 +28,7 @@ export function CaseList() {
           </tr>
         </thead>
         <tbody>
-          {MOCK_CASES.map((c) => {
+          {cases.map((c) => {
             const alert = alertsById[c.alertId];
             return (
               <tr
@@ -49,10 +51,12 @@ export function CaseList() {
                     <span className="text-[#8b9cad]">—</span>
                   )}
                 </td>
-                <td className="px-4 py-3 capitalize">{outcomeLabel(c.outcome)}</td>
+                <td className="px-4 py-3 capitalize">
+                  {c.outcome != null ? outcomeLabel(c.outcome) : "Open"}
+                </td>
                 <td className="px-4 py-3 text-[#8b9cad]">{c.segment ?? "—"}</td>
                 <td className="px-4 py-3 text-[#8b9cad]">
-                  {new Date(c.closedAt).toLocaleDateString()}
+                  {c.closedAt != null ? new Date(c.closedAt).toLocaleDateString() : "—"}
                 </td>
                 <td className="px-4 py-3">
                   <Link

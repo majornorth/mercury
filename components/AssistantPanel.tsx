@@ -90,7 +90,7 @@ export function AssistantPanel({ open, onClose }: AssistantPanelProps) {
           </button>
         </div>
 
-        <div className="px-4 pb-3 border-b border-border shrink-0 space-y-1">
+        <div className="px-4 pt-4 pb-3 border-b border-border shrink-0 space-y-1">
           {currentAlert && (
             <p className="text-xs text-[#6ea8fe]">
               Viewing alert <span className="font-mono">{currentAlert.alertId}</span> ({currentAlert.accountName})

@@ -21,6 +21,9 @@ export default function AuditPage() {
         <p className="text-sm text-[#8b9cad] mt-1">
           Data access, workflow actions, LLM usage, and view events. In production, stored in a dedicated append-only audit store with retention.
         </p>
+        <p className="text-xs text-[#8b9cad] mt-2 rounded bg-surface-overlay/50 px-2 py-1.5 inline-block">
+          System status: Operational (mock). In production, this would reflect real health checks.
+        </p>
       </div>
 
       <div className="rounded-lg border border-border bg-surface-elevated overflow-hidden">

@@ -1,22 +1,26 @@
-import { MOCK_CASES } from "@/lib/mockData";
+"use client";
+
+import { getMergedCases } from "@/lib/caseStore";
 import type { OutcomeCode } from "@/lib/mockData";
 
-function outcomeLabel(code: OutcomeCode): string {
+function outcomeLabel(code: string): string {
   return code.replace(/_/g, " ");
 }
 
 export function CaseOutcomesSummary() {
+  const cases = getMergedCases();
   const byOutcome: Record<string, number> = {};
   const bySegment: Record<string, number> = {};
-  for (const c of MOCK_CASES) {
-    byOutcome[c.outcome] = (byOutcome[c.outcome] ?? 0) + 1;
+  for (const c of cases) {
+    const outcomeKey = c.outcome ?? "open";
+    byOutcome[outcomeKey] = (byOutcome[outcomeKey] ?? 0) + 1;
     const seg = c.segment ?? "—";
     bySegment[seg] = (bySegment[seg] ?? 0) + 1;
   }
   const outcomeEntries = Object.entries(byOutcome).sort((a, b) => b[1] - a[1]);
   const segmentEntries = Object.entries(bySegment).sort((a, b) => b[1] - a[1]);
 
-  if (MOCK_CASES.length === 0) return null;
+  if (cases.length === 0) return null;
 
   return (
     <section className="rounded-lg border border-border bg-surface-elevated p-4 mb-6">
@@ -30,7 +34,7 @@ export function CaseOutcomesSummary() {
           <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
             {outcomeEntries.map(([outcome, count]) => (
               <li key={outcome} className="flex items-center gap-2">
-                <span className="text-[#8b9cad] capitalize">{outcomeLabel(outcome as OutcomeCode)}</span>
+                <span className="text-[#8b9cad] capitalize">{outcomeLabel(outcome)}</span>
                 <span className="text-white font-medium">{count}</span>
               </li>
             ))}

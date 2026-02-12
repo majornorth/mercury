@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MOCK_ALERTS } from "@/lib/mockData";
 
 export function AlertVolumeByRule() {
@@ -13,7 +14,15 @@ export function AlertVolumeByRule() {
 
   return (
     <section className="rounded-lg border border-border bg-surface-elevated p-4 mb-6">
-      <h2 className="text-sm font-medium text-[#8b9cad] mb-2">Alert volume by rule</h2>
+      <div className="flex items-center justify-between gap-4 mb-2">
+        <h2 className="text-sm font-medium text-[#8b9cad]">Alert volume by rule</h2>
+        <Link
+          href="/rules"
+          className="text-sm font-medium text-[#6ea8fe] hover:underline shrink-0"
+        >
+          Rules reference
+        </Link>
+      </div>
       <p className="text-xs text-[#8b9cad] mb-3">
         Rule and threshold impact; use for policy tuning and triage prioritization.
       </p>

@@ -23,11 +23,12 @@ export interface AlertDetail extends Alert {
   transactionSummary: { count: number; totalAmountUsd: number; lastActivity: string };
 }
 
+/** Case record. outcome/closedAt optional for open (created) cases; consumers show "Open" / "—" when missing. */
 export interface CaseSummary {
   id: string;
   alertId: string;
-  outcome: OutcomeCode;
-  closedAt: string;
+  outcome?: OutcomeCode;
+  closedAt?: string;
   segment?: string;
   rationale?: string;
 }
@@ -59,7 +60,7 @@ export const MOCK_ALERTS: Alert[] = [
     accountName: "Gamma Payments Co",
     riskTier: "high",
     status: "new",
-    ruleNames: ["TM-STRUCTURING", "TM-CASH-INTENSIVE"],
+    ruleNames: ["TM-STRUCTURING", "TM-CASH-INTENSIVE", "TM-RAPID-MOVEMENT"],
     createdAt: "2025-02-12T06:15:00Z",
     segment: "fintech",
   },
@@ -73,6 +74,26 @@ export const MOCK_ALERTS: Alert[] = [
     createdAt: "2025-02-10T11:00:00Z",
     segment: "ecommerce",
   },
+  { id: "alt-005", accountId: "acc-105", accountName: "Epsilon Trading Ltd", riskTier: "medium", status: "new", ruleNames: ["TM-LARGE-SINGLE", "TM-INTL-WIRE-VELOCITY"], createdAt: "2025-02-12T07:20:00Z", segment: "ecommerce" },
+  { id: "alt-006", accountId: "acc-106", accountName: "Zeta Financial Services", riskTier: "high", status: "in_review", ruleNames: ["TM-STRUCTURING"], createdAt: "2025-02-11T09:00:00Z", segment: "fintech" },
+  { id: "alt-007", accountId: "acc-107", accountName: "Eta Commerce Inc", riskTier: "low", status: "closed", ruleNames: ["ONB-BENEFICIAL-OWNER"], createdAt: "2025-02-09T16:45:00Z", segment: "ecommerce" },
+  { id: "alt-008", accountId: "acc-108", accountName: "Theta Payments Group", riskTier: "medium", status: "escalated", ruleNames: ["TM-CASH-INTENSIVE", "TM-LARGE-SINGLE", "TM-HIGH-RISK-JURISDICTION"], createdAt: "2025-02-11T12:30:00Z", segment: "fintech" },
+  { id: "alt-009", accountId: "acc-109", accountName: "Iota Supply Chain Co", riskTier: "high", status: "new", ruleNames: ["TM-INTL-WIRE-VELOCITY", "TM-STRUCTURING"], createdAt: "2025-02-12T05:00:00Z", segment: "ecommerce" },
+  { id: "alt-010", accountId: "acc-110", accountName: "Kappa Software LLC", riskTier: "medium", status: "in_review", ruleNames: ["ONB-BENEFICIAL-OWNER", "TM-LARGE-SINGLE"], createdAt: "2025-02-10T14:00:00Z", segment: "saas" },
+  { id: "alt-011", accountId: "acc-111", accountName: "Lambda Export Partners", riskTier: "low", status: "new", ruleNames: ["TM-INTL-WIRE-VELOCITY"], createdAt: "2025-02-12T04:15:00Z", segment: "ecommerce" },
+  { id: "alt-012", accountId: "acc-112", accountName: "Mu Ventures Inc", riskTier: "high", status: "escalated", ruleNames: ["TM-STRUCTURING", "TM-CASH-INTENSIVE"], createdAt: "2025-02-08T10:20:00Z", segment: "fintech" },
+  { id: "alt-013", accountId: "acc-113", accountName: "Nu Retail Holdings", riskTier: "medium", status: "closed", ruleNames: ["TM-LARGE-SINGLE"], createdAt: "2025-02-09T08:30:00Z", segment: "ecommerce" },
+  { id: "alt-014", accountId: "acc-114", accountName: "Xi Digital Wallet Co", riskTier: "high", status: "new", ruleNames: ["TM-CASH-INTENSIVE", "TM-INTL-WIRE-VELOCITY"], createdAt: "2025-02-12T03:00:00Z", segment: "fintech" },
+  { id: "alt-015", accountId: "acc-115", accountName: "Omicron B2B Solutions", riskTier: "medium", status: "in_review", ruleNames: ["ONB-BENEFICIAL-OWNER", "ONB-SANCTIONS-EDGE"], createdAt: "2025-02-11T11:15:00Z", segment: "saas" },
+  { id: "alt-016", accountId: "acc-116", accountName: "Pi Logistics Network", riskTier: "low", status: "new", ruleNames: ["TM-INTL-WIRE-VELOCITY", "TM-LARGE-SINGLE", "TM-RAPID-MOVEMENT"], createdAt: "2025-02-12T02:45:00Z", segment: "ecommerce" },
+  { id: "alt-017", accountId: "acc-117", accountName: "Rho Capital Partners", riskTier: "high", status: "in_review", ruleNames: ["TM-STRUCTURING"], createdAt: "2025-02-10T17:00:00Z", segment: "fintech" },
+  { id: "alt-018", accountId: "acc-118", accountName: "Sigma Cloud Services", riskTier: "medium", status: "closed", ruleNames: ["TM-LARGE-SINGLE", "ONB-BENEFICIAL-OWNER"], createdAt: "2025-02-08T13:30:00Z", segment: "saas" },
+  { id: "alt-019", accountId: "acc-119", accountName: "Tau Manufacturing Ltd", riskTier: "low", status: "escalated", ruleNames: ["TM-INTL-WIRE-VELOCITY"], createdAt: "2025-02-11T08:00:00Z", segment: "ecommerce" },
+  { id: "alt-020", accountId: "acc-120", accountName: "Upsilon Pay Inc", riskTier: "medium", status: "new", ruleNames: ["TM-CASH-INTENSIVE"], createdAt: "2025-02-12T01:30:00Z", segment: "fintech" },
+  { id: "alt-021", accountId: "acc-121", accountName: "Phi Analytics Corp", riskTier: "high", status: "new", ruleNames: ["TM-STRUCTURING", "TM-LARGE-SINGLE"], createdAt: "2025-02-12T00:15:00Z", segment: "saas" },
+  { id: "alt-022", accountId: "acc-122", accountName: "Chi Global Trade", riskTier: "medium", status: "in_review", ruleNames: ["TM-INTL-WIRE-VELOCITY", "TM-CASH-INTENSIVE"], createdAt: "2025-02-10T09:45:00Z", segment: "ecommerce" },
+  { id: "alt-023", accountId: "acc-123", accountName: "Psi Fintech Labs", riskTier: "low", status: "closed", ruleNames: ["ONB-BENEFICIAL-OWNER", "TM-INTL-WIRE-VELOCITY", "ONB-SANCTIONS-EDGE"], createdAt: "2025-02-07T15:20:00Z", segment: "fintech" },
+  { id: "alt-024", accountId: "acc-124", accountName: "Omega Enterprises", riskTier: "high", status: "escalated", ruleNames: ["TM-STRUCTURING", "TM-INTL-WIRE-VELOCITY", "TM-LARGE-SINGLE"], createdAt: "2025-02-09T07:00:00Z", segment: "ecommerce" },
 ];
 
 export const MOCK_ALERT_DETAILS: Record<string, AlertDetail> = {
@@ -141,4 +162,61 @@ export const MOCK_CASES: CaseSummary[] = [
     segment: "ecommerce",
     rationale: "Aligned with case-1 (same segment, TM-INTL-WIRE-VELOCITY); closed no action.",
   },
+];
+
+// --- Custom report mock data (strategist-oriented analytical views) ---
+
+/** Outcomes by segment: for cohort comparison and escalation concentration. */
+export interface OutcomesBySegmentRow {
+  segment: string;
+  closedNoAction: number;
+  escalated: number;
+  sar: number;
+  approved: number;
+  denied: number;
+  open: number;
+  total: number;
+}
+
+/** Rule performance by segment: for policy/tuning (alert volume, FP proxy, escalation drive). */
+export interface RulePerformanceBySegmentRow {
+  ruleId: string;
+  ruleName: string;
+  category: "transaction_monitoring" | "onboarding";
+  segment: string;
+  alertCount: number;
+  closedNoAction: number;
+  escalated: number;
+  sar: number;
+  open: number;
+  /** % of resolved alerts closed with no action (proxy for false positive rate). */
+  pctClosedNoAction: number;
+  /** Onboarding rules only. */
+  approved?: number;
+  denied?: number;
+}
+
+export const MOCK_OUTCOMES_BY_SEGMENT: OutcomesBySegmentRow[] = [
+  { segment: "ecommerce", closedNoAction: 12, escalated: 3, sar: 1, approved: 8, denied: 2, open: 7, total: 33 },
+  { segment: "saas", closedNoAction: 6, escalated: 2, sar: 0, approved: 14, denied: 1, open: 4, total: 27 },
+  { segment: "fintech", closedNoAction: 4, escalated: 5, sar: 2, approved: 3, denied: 2, open: 6, total: 22 },
+];
+
+export const MOCK_RULE_PERFORMANCE_BY_SEGMENT: RulePerformanceBySegmentRow[] = [
+  { ruleId: "TM-INTL-WIRE-VELOCITY", ruleName: "TM-INTL-WIRE-VELOCITY", category: "transaction_monitoring", segment: "ecommerce", alertCount: 14, closedNoAction: 8, escalated: 2, sar: 1, open: 3, pctClosedNoAction: 73 },
+  { ruleId: "TM-INTL-WIRE-VELOCITY", ruleName: "TM-INTL-WIRE-VELOCITY", category: "transaction_monitoring", segment: "fintech", alertCount: 6, closedNoAction: 2, escalated: 3, sar: 1, open: 0, pctClosedNoAction: 33 },
+  { ruleId: "TM-LARGE-SINGLE", ruleName: "TM-LARGE-SINGLE", category: "transaction_monitoring", segment: "ecommerce", alertCount: 9, closedNoAction: 5, escalated: 1, sar: 0, open: 3, pctClosedNoAction: 83 },
+  { ruleId: "TM-LARGE-SINGLE", ruleName: "TM-LARGE-SINGLE", category: "transaction_monitoring", segment: "saas", alertCount: 5, closedNoAction: 3, escalated: 1, sar: 0, open: 1, pctClosedNoAction: 75 },
+  { ruleId: "TM-LARGE-SINGLE", ruleName: "TM-LARGE-SINGLE", category: "transaction_monitoring", segment: "fintech", alertCount: 4, closedNoAction: 1, escalated: 2, sar: 0, open: 1, pctClosedNoAction: 33 },
+  { ruleId: "TM-STRUCTURING", ruleName: "TM-STRUCTURING", category: "transaction_monitoring", segment: "ecommerce", alertCount: 3, closedNoAction: 1, escalated: 1, sar: 0, open: 1, pctClosedNoAction: 50 },
+  { ruleId: "TM-STRUCTURING", ruleName: "TM-STRUCTURING", category: "transaction_monitoring", segment: "fintech", alertCount: 7, closedNoAction: 2, escalated: 3, sar: 1, open: 1, pctClosedNoAction: 33 },
+  { ruleId: "TM-CASH-INTENSIVE", ruleName: "TM-CASH-INTENSIVE", category: "transaction_monitoring", segment: "fintech", alertCount: 8, closedNoAction: 2, escalated: 4, sar: 1, open: 1, pctClosedNoAction: 29 },
+  { ruleId: "TM-CASH-INTENSIVE", ruleName: "TM-CASH-INTENSIVE", category: "transaction_monitoring", segment: "ecommerce", alertCount: 2, closedNoAction: 1, escalated: 0, sar: 0, open: 1, pctClosedNoAction: 100 },
+  { ruleId: "ONB-BENEFICIAL-OWNER", ruleName: "ONB-BENEFICIAL-OWNER", category: "onboarding", segment: "saas", alertCount: 11, closedNoAction: 4, escalated: 2, sar: 0, approved: 3, denied: 0, open: 2, pctClosedNoAction: 44 },
+  { ruleId: "ONB-BENEFICIAL-OWNER", ruleName: "ONB-BENEFICIAL-OWNER", category: "onboarding", segment: "ecommerce", alertCount: 2, closedNoAction: 0, escalated: 0, sar: 0, approved: 1, denied: 0, open: 1, pctClosedNoAction: 0 },
+  { ruleId: "TM-RAPID-MOVEMENT", ruleName: "TM-RAPID-MOVEMENT", category: "transaction_monitoring", segment: "ecommerce", alertCount: 2, closedNoAction: 1, escalated: 0, sar: 0, open: 1, pctClosedNoAction: 50 },
+  { ruleId: "TM-RAPID-MOVEMENT", ruleName: "TM-RAPID-MOVEMENT", category: "transaction_monitoring", segment: "fintech", alertCount: 1, closedNoAction: 0, escalated: 1, sar: 0, open: 0, pctClosedNoAction: 0 },
+  { ruleId: "TM-HIGH-RISK-JURISDICTION", ruleName: "TM-HIGH-RISK-JURISDICTION", category: "transaction_monitoring", segment: "fintech", alertCount: 1, closedNoAction: 0, escalated: 1, sar: 0, open: 0, pctClosedNoAction: 0 },
+  { ruleId: "ONB-SANCTIONS-EDGE", ruleName: "ONB-SANCTIONS-EDGE", category: "onboarding", segment: "saas", alertCount: 1, closedNoAction: 0, escalated: 0, sar: 0, approved: 0, denied: 0, open: 1, pctClosedNoAction: 0 },
+  { ruleId: "ONB-SANCTIONS-EDGE", ruleName: "ONB-SANCTIONS-EDGE", category: "onboarding", segment: "fintech", alertCount: 1, closedNoAction: 0, escalated: 0, sar: 0, approved: 1, denied: 0, open: 0, pctClosedNoAction: 0 },
 ];
