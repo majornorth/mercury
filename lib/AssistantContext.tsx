@@ -15,7 +15,7 @@ interface AssistantContextValue {
 const AssistantContext = createContext<AssistantContextValue | null>(null);
 
 export function AssistantProvider({ children }: { children: ReactNode }) {
-  const [assistantOpen, setAssistantOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(true);
   const [assistantIntent, setAssistantIntent] = useState<AssistantIntent>("default");
   const clearAssistantIntent = useCallback(() => setAssistantIntent("default"), []);
 
