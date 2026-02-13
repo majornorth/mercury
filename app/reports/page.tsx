@@ -84,7 +84,7 @@ export default function ReportsPage() {
   const showRulePerfReport = selectedReportId === "rule-perf-outcomes";
 
   return (
-    <div className="flex gap-6 px-4 sm:px-6 py-8 max-w-[1600px] mx-auto">
+    <div className="flex gap-6 px-4 sm:px-6 py-8 max-w-7xl mx-auto">
       {/* Left column: main content */}
       <div className="min-w-0 flex-1">
         <div className="mb-6">
