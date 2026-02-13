@@ -32,7 +32,7 @@ export function AlertDetailView({ alert, detail }: AlertDetailViewProps) {
   }, [alert.id, alert.accountName, setCurrentAlert]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <div className="mb-6">
         <Link
           href="/alerts"

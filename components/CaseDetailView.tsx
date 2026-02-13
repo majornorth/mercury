@@ -52,7 +52,7 @@ export function CaseDetailView({ caseItem, alert, similarCases, patternArchetype
   }, [toastMessage]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <div className="mb-6">
         <Link href="/cases" className="text-sm text-[#8b9cad] hover:text-white mb-2 inline-block">
           ← Cases
